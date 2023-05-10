@@ -4,7 +4,7 @@
 
 > **Note**
 > If you have any issues, please report them on [GitHub](https://github.com/JetBrains/compose-multiplatform/issues).
-
+くぁｗせｊこｌｐ
 Compose for Desktop can produce applications for macOS, Linux, and Windows.
 You can use any of these platforms with our template.
 
