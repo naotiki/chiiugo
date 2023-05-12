@@ -29,6 +29,7 @@ import org.jetbrains.compose.animatedimage.*
 import org.jetbrains.compose.resources.LoadState
 import org.jetbrains.compose.resources.load
 import org.jetbrains.compose.resources.loadOrNull
+import kotlin.random.Random
 
 @Composable
 @Preview
@@ -37,7 +38,6 @@ fun App() {
     MaterialTheme {
 
         Box(modifier = Modifier.border(2.dp, Color.Black).size(200.dp)) {
-            //おなかすいた
             Image(loadOrNull { loadResourceAnimatedImage("parrot.gif").apply {
                 println(this.codec.frameCount)
             } }?.animate() ?: ImageBitmap.Blank, null, Modifier.fillMaxSize())
@@ -50,7 +50,7 @@ fun main() = application {
     ScreenSize.density = LocalDensity.current.density
 
     //Windowサイズや位置の情報が入っている
-    val windowState = rememberWindowState(size = DpSize.Unspecified, position = WindowPosition(0.dp, 0.dp))
+    val windowState = rememberWindowState(size = DpSize.Unspecified, position = WindowPosition((Random.nextFloat() * ScreenSize.widthDp).dp, (Random.nextFloat() * ScreenSize.heightDp).dp))
 
     //アニメーション用の位置
     val animatedWindowPosition = remember() { Animatable(windowState.position as WindowPosition.Absolute,WindowPositionToVector) }
