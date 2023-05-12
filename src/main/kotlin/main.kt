@@ -6,13 +6,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.window.WindowDraggableArea
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
@@ -22,14 +25,22 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.animatedimage.*
+import org.jetbrains.compose.resources.LoadState
+import org.jetbrains.compose.resources.load
+import org.jetbrains.compose.resources.loadOrNull
 
 @Composable
 @Preview
 fun App() {
 
     MaterialTheme {
+
         Box(modifier = Modifier.border(2.dp, Color.Black).size(200.dp)) {
-            Image(painterResource("ktlnrner.png"), null, Modifier.fillMaxSize())
+            //おなかすいた
+            Image(loadOrNull { loadResourceAnimatedImage("parrot.gif").apply {
+                println(this.codec.frameCount)
+            } }?.animate() ?: ImageBitmap.Blank, null, Modifier.fillMaxSize())
         }
     }
 }
@@ -47,7 +58,7 @@ fun main() = application {
     LaunchedEffect(Unit) {
         delay(1000)
         //1sec後にAnimationType.Testを実行
-        AnimationManager.animate(animatedWindowPosition, AnimationType.Test)
+       AnimationManager.animate(animatedWindowPosition, AnimationType.Test)
 
     }
     val statePos by animatedWindowPosition.asState()
@@ -64,10 +75,7 @@ fun main() = application {
         alwaysOnTop = true
     ) {
 
-        WindowDraggableArea {
-            //()App関数を表示
-                    App()
-        }
+        App()
     }
 }
 
