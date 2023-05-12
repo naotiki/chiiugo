@@ -60,12 +60,13 @@ fun main() = application {
         state = windowState,
         resizable = false,
         transparent = true,
-        undecorated = true
+        undecorated = true,
+        alwaysOnTop = true
     ) {
 
         WindowDraggableArea {
-            //App関数を表示
-            App()
+            //()App関数を表示
+                    App()
         }
     }
 }
