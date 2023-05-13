@@ -38,7 +38,7 @@ fun App() {
     MaterialTheme {
 
         Box(modifier = Modifier.size(200.dp)) {
-            Image(loadOrNull { loadResourceAnimatedImage("parrot.gif").apply {
+            Image(loadOrNull { loadResourceAnimatedImage("SUC.gif").apply {
                 println(this.codec.frameCount)
             } }?.animate() ?: ImageBitmap.Blank, null, Modifier.fillMaxSize())
         }

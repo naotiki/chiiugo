@@ -14,7 +14,7 @@ enum class AnimationType(val action: suspend WindowAnimatable.() -> Unit) {
                     y = (Random.nextFloat() * ScreenSize.heightDp).dp
                 ),
                 tween(
-                    10000, easing = androidx.compose.animation.core.EaseInOutBounce
+                    5000, easing = androidx.compose.animation.core.EaseInOut
                 )
             )
             delay(500)
