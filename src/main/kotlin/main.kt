@@ -35,7 +35,7 @@ fun main() = application {
     }
 
     //SUCの状態
-    val mascotState=rememberMascotState()
+    val mascotState=rememberMascotState(MascotEventType.Run)
     val mascotEventType by mascotState.flow.collectAsState()
                     //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
     var gifName by remember(mascotEventType) { mutableStateOf("SUC.png") }
@@ -49,7 +49,7 @@ fun main() = application {
             MascotEventType.None -> TODO()
             MascotEventType.Run -> {
                 gifName="SUC.gif"
-                //アニメーション書いてちょ
+                //TODO アニメーション書いてちょ
                 /*
                 repeat(200){
                     animatedWindowPosition.animateTo()
