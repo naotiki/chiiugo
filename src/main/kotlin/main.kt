@@ -1,23 +1,12 @@
 import androidx.compose.animation.core.Animatable
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.window.WindowDraggableArea
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -25,46 +14,54 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import kotlinx.coroutines.delay
-import org.jetbrains.compose.animatedimage.*
-import org.jetbrains.compose.resources.LoadState
-import org.jetbrains.compose.resources.load
+import org.jetbrains.compose.animatedimage.Blank
+import org.jetbrains.compose.animatedimage.animate
+import org.jetbrains.compose.animatedimage.loadResourceAnimatedImage
 import org.jetbrains.compose.resources.loadOrNull
 import kotlin.random.Random
 
-@Composable
-@Preview
-fun App() {
-
-    MaterialTheme {
-
-        Box(modifier = Modifier.size(200.dp)) {
-            Image(loadOrNull { loadResourceAnimatedImage("SUC.gif").apply {
-                println(this.codec.frameCount)
-            } }?.animate() ?: ImageBitmap.Blank, null, Modifier.fillMaxSize())
-        }
-    }
-}
 
 fun main() = application {
-    //スクリーンの情報を更新
+    //1dp あたりのpx数を取得 remember いらない
     ScreenSize.density = LocalDensity.current.density
-
     //Windowサイズや位置の情報が入っている
     val windowState = rememberWindowState(size = DpSize.Unspecified, position = WindowPosition((Random.nextFloat() * ScreenSize.widthDp).dp, (Random.nextFloat() * ScreenSize.heightDp).dp))
-
     //アニメーション用の位置
-    val animatedWindowPosition = remember() { Animatable(windowState.position as WindowPosition.Absolute,WindowPositionToVector) }
-
-    LaunchedEffect(Unit) {
-        delay(1000)
-        //1sec後にAnimationType.Testを実行
-       AnimationManager.animate(animatedWindowPosition, AnimationType.Test)
-
-    }
+    val animatedWindowPosition = remember { Animatable(windowState.position as WindowPosition.Absolute,WindowPositionToVector) }
     val statePos by animatedWindowPosition.asState()
+    //Window位置を更新
     LaunchedEffect(statePos) {
         windowState.position = statePos
     }
+
+    //SUCの状態
+    val mascotState=rememberMascotState()
+    val mascotEventType by mascotState.flow.collectAsState()
+                    //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
+    var gifName by remember(mascotEventType) { mutableStateOf("SUC.png") }
+
+    LaunchedEffect(mascotEventType){
+        when(mascotEventType){
+            MascotEventType.Explosion -> TODO()
+            MascotEventType.Fall -> TODO()
+            is MascotEventType.Feed -> TODO()
+            MascotEventType.Gaming -> TODO()
+            MascotEventType.None -> TODO()
+            MascotEventType.Run -> {
+                gifName="SUC.gif"
+                //アニメーション書いてちょ
+                /*
+                repeat(200){
+                    animatedWindowPosition.animateTo()
+                }
+                */
+            }
+            MascotEventType.Speak -> TODO()
+        }
+        //Noneに戻す
+        mascotState.change(MascotEventType.None)
+    }
+
     //Windowを表示
     Window(
         onCloseRequest = ::exitApplication,
@@ -75,7 +72,13 @@ fun main() = application {
         alwaysOnTop = true
     ) {
 
-        App()
+        Box(modifier = Modifier.size(200.dp)) {
+            //SUCちゃん
+            Image(loadOrNull { loadResourceAnimatedImage(gifName).apply {
+                println(this.codec.frameCount)
+            } }?.animate() ?: ImageBitmap.Blank, null, Modifier.fillMaxSize())
+
+        }
     }
 }
 
