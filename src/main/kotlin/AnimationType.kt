@@ -3,15 +3,18 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import org.jetbrains.skia.ColorFilter
 import kotlin.random.Random
-
+var x = 0
+var y = 0
 enum class AnimationType(val action: suspend WindowAnimatable.() -> Unit) {
     Test({
 
-        kotlin.repeat(200) {
+        while(true) {
+            x = (Random.nextFloat() * ScreenSize.widthDp).toInt()
+            y = (Random.nextFloat() * ScreenSize.heightDp).toInt()
             animateTo(
                 this.value.copy(
-                    x = (Random.nextFloat() * ScreenSize.widthDp).dp,
-                    y = (Random.nextFloat() * ScreenSize.heightDp).dp
+                    x.dp,
+                    y.dp
                 ),
                 tween(
                     5000, easing = androidx.compose.animation.core.EaseInOut
@@ -26,6 +29,11 @@ enum class AnimationType(val action: suspend WindowAnimatable.() -> Unit) {
             }else{
                 kotlin.io.println("test3")
             }//静止した後ランダムで(行動)or(何もしない)をする
+            delay(500)
         }
+    }),
+
+    Direction({
+
     })
 }

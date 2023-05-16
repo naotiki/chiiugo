@@ -1,10 +1,15 @@
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
@@ -18,6 +23,9 @@ import org.jetbrains.compose.animatedimage.Blank
 import org.jetbrains.compose.animatedimage.animate
 import org.jetbrains.compose.animatedimage.loadResourceAnimatedImage
 import org.jetbrains.compose.resources.loadOrNull
+import java.awt.Color.getColor
+import java.awt.Color.white
+import java.awt.SystemColor.text
 import kotlin.random.Random
 
 
@@ -39,6 +47,7 @@ fun main() = application {
     val mascotEventType by mascotState.flow.collectAsState()
                     //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
     var gifName by remember(mascotEventType) { mutableStateOf("SUC.png") }
+    var show by remember { mutableStateOf(false) }
 
     LaunchedEffect(mascotEventType){
         when(mascotEventType){
@@ -50,13 +59,24 @@ fun main() = application {
             MascotEventType.Run -> {
                 gifName="SUC.gif"
                 //TODO アニメーション書いてちょ
-                /*
-                repeat(200){
-                    animatedWindowPosition.animateTo()
+
+                while(true){
+                    val x = (Random.nextFloat() * ScreenSize.widthDp).toInt()
+                    val y = (Random.nextFloat() * ScreenSize.heightDp).toInt()
+                    animatedWindowPosition.animateTo(
+                        animatedWindowPosition.value.copy(
+                            x.dp,
+                            y.dp
+                        ),
+                        tween(
+                            5000, easing = EaseInOut
+                        )
+                    )
                 }
-                */
             }
-            MascotEventType.Speak -> TODO()
+            MascotEventType.Speak -> {
+                show = true
+            }
         }
         //Noneに戻す
         mascotState.change(MascotEventType.None)
@@ -72,12 +92,35 @@ fun main() = application {
         alwaysOnTop = true
     ) {
 
-        Box(modifier = Modifier.size(200.dp)) {
+        Box(modifier = Modifier.size(600.dp)) {
             //SUCちゃん
-            Image(loadOrNull { loadResourceAnimatedImage(gifName).apply {
+            Image(loadOrNull { loadResourceAnimatedImage(gifName)
+                .apply {
                 println(this.codec.frameCount)
-            } }?.animate() ?: ImageBitmap.Blank, null, Modifier.fillMaxSize())
-
+            } }
+                ?.animate() ?: ImageBitmap.Blank,
+                null,
+                Modifier.size(175.dp)
+                    .align(alignment = Alignment.Center)
+                )
+            if(show){
+                Box(modifier = Modifier.width(400.dp).offset(x = 150.dp, y = 50.dp)) {
+                    var ran by remember { mutableStateOf((0 .. 2).random()) }
+                    LaunchedEffect(Unit){
+                        while (true){
+                            ran = (0..2).random()
+                            delay(1000)
+                        }
+                    }
+                    val text = listOf("カップルでディズニーに行くとすぐ別れるっていうよね。", "test", "test2")
+                    Text(text[ran], modifier = Modifier
+                        .height(40.dp)
+                        .padding(horizontal = 50.dp)
+                        .background(color = Color(0xff5ff4ac),
+                            shape = RoundedCornerShape(30))
+                    )
+            }
+            }
         }
     }
 }
