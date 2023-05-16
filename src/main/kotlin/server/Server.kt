@@ -12,7 +12,6 @@ import java.io.DataInputStream
 import java.net.ServerSocket
 import java.net.Socket
 import java.nio.ByteBuffer
-import kotlin.reflect.typeOf
 
 const val PORT = 0xCAD
 class Server(val port: Int=PORT) {
@@ -61,7 +60,7 @@ sealed interface Event {
     @Serializable
     data class FailedBuild(val buildId:String):Event
     @Serializable
-    data class Typed(val string: String):Event
+    data class Typed(val char: Char):Event
 }
 
 @Serializable
