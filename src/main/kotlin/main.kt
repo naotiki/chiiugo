@@ -47,7 +47,7 @@ fun main() = application {
     val mascotEventType by mascotState.flow.collectAsState()
                     //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
     var gifName by remember(mascotEventType) { mutableStateOf("SUC.png") }
-    var show by remember { mutableStateOf(false) }
+    var show by remember { mutableStateOf(true) }
 
     LaunchedEffect(mascotEventType){
         when(mascotEventType){
@@ -57,10 +57,10 @@ fun main() = application {
             MascotEventType.Gaming -> TODO()
             MascotEventType.None -> TODO()
             MascotEventType.Run -> {
-                gifName="SUC.gif"
+                gifName = "SUC.gif"
                 //TODO アニメーション書いてちょ
 
-                while(true){
+                while (true) {
                     val x = (Random.nextFloat() * ScreenSize.widthDp).toInt()
                     val y = (Random.nextFloat() * ScreenSize.heightDp).toInt()
                     animatedWindowPosition.animateTo(
@@ -92,32 +92,34 @@ fun main() = application {
         alwaysOnTop = true
     ) {
 
-        Box(modifier = Modifier.size(600.dp)) {
+        Box(modifier = Modifier) {
             //SUCちゃん
-            Image(loadOrNull { loadResourceAnimatedImage(gifName)
-                .apply {
-                println(this.codec.frameCount)
-            } }
+            Image(loadOrNull {
+                loadResourceAnimatedImage(gifName)
+            }
                 ?.animate() ?: ImageBitmap.Blank,
                 null,
                 Modifier.size(175.dp)
-                    .align(alignment = Alignment.Center)
-                )
-            if(show){
-                Box(modifier = Modifier.width(400.dp).offset(x = 150.dp, y = 50.dp)) {
-                    var ran by remember { mutableStateOf((0 .. 2).random()) }
-                    LaunchedEffect(Unit){
-                        while (true){
+            )
+            if (show) {
+                Box(
+                    modifier = Modifier.padding(start = 150.dp, top = 50.dp).width(150.dp)
+                ) {
+                    var ran by remember { mutableStateOf((0..2).random()) }
+                    LaunchedEffect(Unit) {
+                        while (true) {
                             ran = (0..2).random()
                             delay(1000)
                         }
                     }
                     val text = listOf("カップルでディズニーに行くとすぐ別れるっていうよね。", "test", "test2")
-                    Text(text[ran], modifier = Modifier
-                        .height(40.dp)
-                        .padding(horizontal = 50.dp)
-                        .background(color = Color(0xff5ff4ac),
-                            shape = RoundedCornerShape(30))
+                    Text(
+                        text[ran], modifier = Modifier
+                            .background(
+                                color = Color(0xff5ff4ac),
+                                shape = RoundedCornerShape(30)
+                            )
+                            .padding(10.dp)
                     )
             }
             }
