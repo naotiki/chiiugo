@@ -26,6 +26,7 @@ import org.jetbrains.compose.resources.loadOrNull
 import java.awt.Color.getColor
 import java.awt.Color.white
 import java.awt.SystemColor.text
+import javax.swing.text.View
 import kotlin.random.Random
 
 
@@ -33,7 +34,9 @@ fun main() = application {
     //1dp あたりのpx数を取得 remember いらない
     ScreenSize.density = LocalDensity.current.density
     //Windowサイズや位置の情報が入っている
-    val windowState = rememberWindowState(size = DpSize.Unspecified, position = WindowPosition((Random.nextFloat() * ScreenSize.widthDp).dp, (Random.nextFloat() * ScreenSize.heightDp).dp))
+    var winX = remember { Random.nextFloat() * ScreenSize.widthDp }
+    var winY = remember { Random.nextFloat() * ScreenSize.heightDp }
+    val windowState = rememberWindowState(size = DpSize.Unspecified, position = WindowPosition(winX.dp, winY.dp))
     //アニメーション用の位置
     val animatedWindowPosition = remember { Animatable(windowState.position as WindowPosition.Absolute,WindowPositionToVector) }
     val statePos by animatedWindowPosition.asState()
@@ -51,18 +54,33 @@ fun main() = application {
 
     LaunchedEffect(mascotEventType){
         when(mascotEventType){
-            MascotEventType.Explosion -> TODO()
-            MascotEventType.Fall -> TODO()
-            is MascotEventType.Feed -> TODO()
-            MascotEventType.Gaming -> TODO()
-            MascotEventType.None -> TODO()
+            MascotEventType.Explosion -> TODO()//コンパイルエラー
+            MascotEventType.Fall -> TODO()//ランダム
+            is MascotEventType.Feed -> TODO()//タイプ
+            MascotEventType.Gaming -> TODO()//ランダム
+            MascotEventType.None -> {
+                gifName="stay.gif"
+            }
             MascotEventType.Run -> {
-                gifName = "SUC.gif"
                 //TODO アニメーション書いてちょ
 
                 while (true) {
-                    val x = (Random.nextFloat() * ScreenSize.widthDp).toInt()
-                    val y = (Random.nextFloat() * ScreenSize.heightDp).toInt()
+                    val x = (Random.nextFloat() * ScreenSize.widthDp * 0.8)
+                    val y = (Random.nextFloat() * ScreenSize.heightDp * 0.8)
+
+                    gifName = if (x > windowState.position.x.value){
+                        if(y >= windowState.position.y.value){
+                            "downright.png"
+                        }else{
+                            "upright.png"
+                        }
+                    }else{
+                        if(y > windowState.position.y.value){
+                            "downleft.png"
+                        }else{
+                            "upleft.png"
+                        }
+                    }
                     animatedWindowPosition.animateTo(
                         animatedWindowPosition.value.copy(
                             x.dp,
@@ -94,7 +112,7 @@ fun main() = application {
 
         Box(modifier = Modifier) {
             //SUCちゃん
-            Image(loadOrNull {
+            Image(loadOrNull(gifName) {
                 loadResourceAnimatedImage(gifName)
             }
                 ?.animate() ?: ImageBitmap.Blank,
@@ -105,14 +123,26 @@ fun main() = application {
                 Box(
                     modifier = Modifier.padding(start = 150.dp, top = 50.dp).width(150.dp)
                 ) {
-                    var ran by remember { mutableStateOf((0..2).random()) }
+                    var ran by remember { mutableStateOf((0..8).random()) }
                     LaunchedEffect(Unit) {
                         while (true) {
-                            ran = (0..2).random()
-                            delay(1000)
+                            ran = (0..8).random()
+                            delay(5000)
                         }
                     }
-                    val text = listOf("カップルでディズニーに行くとすぐ別れるっていうよね。", "test", "test2")
+                    val text = listOf(
+                        "カップルでディズニーに行くとすぐ別れるっていうよね。",
+                        "もぅﾏﾁﾞ無理...コンパイルしょ...",
+                        "小梅太夫「チャンチャカチャンチャンチャチャンカチャンチャン床に抜け毛が落ちていると思っていたら～～～wwwwww～～…超弦理論でした～～～(11次元宇宙を近くする小梅太夫)あああああﾁｸｼｮｵｵｵｵｵｵｵｵｵｵ超弦理論→～～～",
+                        "技術的には可能です(ｷﾘｯ)",
+                        "ﾄﾞﾋｭｩｩｩｩﾝシンフォギアァァァァ!!!ｷｭｷｭｷｭｷｭｲﾝ!ｷｭｷｭｷｭｷｭｲﾝ!ｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｲﾝ!\n" +
+                                "ﾎﾟｫﾛﾎﾟﾎﾟﾎﾟﾎﾟﾍﾟﾍﾟﾍﾟﾍﾟﾋﾟﾋﾟﾋﾟﾋﾟﾋﾟｰﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟｰ♪",
+                        "も　う　ダ　メ　ぽ",
+                        "♪～",
+                        "ｾｰﾝｷｮ❗\uFE0Fｾﾝｷｮ❗\uFE0Fｱｶﾙｲｾﾝｷｮｰ‼\uFE0Fｾｰﾝｷｮ❗\uFE0Fｾﾝｷｮ❗\uFE0Fｱｶﾙｲｾﾝｷｮｰ‼\uFE0F⤴\uFE0F",
+                        "すごい楽しい素晴らしいソフトがあるんですよBlenderっていうんですけどね，",
+
+                        )
                     Text(
                         text[ran], modifier = Modifier
                             .background(
