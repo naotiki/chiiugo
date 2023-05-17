@@ -5,31 +5,37 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPosition
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
+import androidx.compose.ui.window.*
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.animatedimage.Blank
 import org.jetbrains.compose.animatedimage.animate
 import org.jetbrains.compose.animatedimage.loadResourceAnimatedImage
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.loadOrNull
-import java.awt.Color.getColor
-import java.awt.Color.white
-import java.awt.SystemColor.text
-import javax.swing.text.View
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.kotlinx.kandy.dsl.continuous
+import org.jetbrains.kotlinx.kandy.dsl.invoke
+import org.jetbrains.kotlinx.kandy.dsl.plot
+import org.jetbrains.kotlinx.kandy.letsplot.export.toBufferedImage
+import org.jetbrains.kotlinx.kandy.letsplot.layers.bars
+import org.jetbrains.kotlinx.kandy.letsplot.layout
+import org.jetbrains.kotlinx.kandy.letsplot.x
+import org.jetbrains.kotlinx.kandy.letsplot.y
 import kotlin.random.Random
+import org.jetbrains.kotlinx.kandy.util.color.Color.Companion as KandyColor
 
 
+@OptIn(ExperimentalResourceApi::class)
 fun main() = application {
     //1dp あたりのpx数を取得 remember いらない
     ScreenSize.density = LocalDensity.current.density
@@ -107,7 +113,7 @@ fun main() = application {
         resizable = false,
         transparent = true,
         undecorated = true,
-        alwaysOnTop = true
+        alwaysOnTop = false//TODO デバッグ用に切った 本番時 true
     ) {
 
         Box(modifier = Modifier) {
@@ -155,6 +161,61 @@ fun main() = application {
             }
         }
     }
+    var statisticsWindow by remember { mutableStateOf(true) }
+    Tray(painterResource("SUC.png")) {
+
+        Item("統計") {
+            statisticsWindow = true
+        }
+        Item("閉じる") {
+            exitApplication()
+        }
+    }
+    if (statisticsWindow) {
+        Window(onCloseRequest = { statisticsWindow = false }) {
+            Surface {
+                var graphImage by remember { mutableStateOf(ImageBitmap.Blank) }
+                LaunchedEffect(Unit) {
+                    graphImage = plot(simpleDataset) {
+
+                        x("言語"<String>()) {
+
+                        }
+
+                        y("時間"<Double>()) {
+
+                            scale = continuous(0.0..25.5)
+                        }
+
+                        bars {
+                            fillColor("humidity"<Double>()) {
+                                scale = continuous(range = KandyColor.YELLOW..KandyColor.RED)
+                            }
+
+                            borderLine.width = 0.0
+                        }
+
+
+
+                        layout {
+                            this.size = 1000 to 1000
+                            title = "Simple plot with lets-plot"
+                            caption = "See `examples` section for more\n complicated and interesting examples!"
+                        }
+                    }.toBufferedImage().toComposeImageBitmap()
+                }
+                Column {
+                    Image(graphImage, null, Modifier.fillMaxWidth())
+
+
+                }
+            }
+        }
+    }
 }
 
-
+val simpleDataset = mapOf(
+    "言語" to listOf(0, 1, 2, 4, 5, 7, 8, 9).map { "Kt$it" },
+    "時間" to listOf(12.0, 14.2, 15.1, 15.9, 17.9, 15.6, 14.2, 24.3),
+    "humidity" to listOf(0.5, 0.32, 0.11, 0.89, 0.68, 0.57, 0.56, 0.5)
+)
