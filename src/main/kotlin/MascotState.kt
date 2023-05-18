@@ -14,6 +14,8 @@ sealed interface MascotEventType {
     object Fall : MascotEventType
     //爆発
     object Explosion : MascotEventType
+
+    object DVD : MascotEventType
     //餌食うよ
     data class Feed(val char: Char) : MascotEventType
 }

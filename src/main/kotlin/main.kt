@@ -1,22 +1,22 @@
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.animatedimage.Blank
 import org.jetbrains.compose.animatedimage.animate
 import org.jetbrains.compose.animatedimage.loadResourceAnimatedImage
@@ -31,7 +31,9 @@ import org.jetbrains.kotlinx.kandy.letsplot.layers.bars
 import org.jetbrains.kotlinx.kandy.letsplot.layout
 import org.jetbrains.kotlinx.kandy.letsplot.x
 import org.jetbrains.kotlinx.kandy.letsplot.y
+import kotlin.math.roundToInt
 import kotlin.random.Random
+import kotlin.random.nextInt
 import org.jetbrains.kotlinx.kandy.util.color.Color.Companion as KandyColor
 
 
@@ -40,11 +42,13 @@ fun main() = application {
     //1dp あたりのpx数を取得 remember いらない
     ScreenSize.density = LocalDensity.current.density
     //Windowサイズや位置の情報が入っている
+    val coroutineScope = rememberCoroutineScope()
     val winX = remember { Random.nextFloat() * ScreenSize.widthDp }
     val winY = remember { Random.nextFloat() * ScreenSize.heightDp }
     val windowState = rememberWindowState(size = DpSize.Unspecified, position = WindowPosition(winX.dp, winY.dp))
     //アニメーション用の位置
-    val animatedWindowPosition = remember { Animatable(windowState.position as WindowPosition.Absolute,WindowPositionToVector) }
+    val animatedWindowPosition =
+        remember { Animatable(windowState.position as WindowPosition.Absolute, WindowPositionToVector) }
     val statePos by animatedWindowPosition.asState()
     //Window位置を更新
     LaunchedEffect(statePos) {
@@ -52,21 +56,35 @@ fun main() = application {
     }
 
     //SUCの状態
-    val mascotState=rememberMascotState(MascotEventType.Run)
+    val mascotState = rememberMascotState(MascotEventType.Run)
     val mascotEventType by mascotState.flow.collectAsState()
-                    //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
+    //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
     var gifName by remember(mascotEventType) { mutableStateOf("SUC.png") }
     var show by remember { mutableStateOf(true) }
 
-    LaunchedEffect(mascotEventType){
-        when(mascotEventType){
+
+    val charList = remember() { mutableStateMapOf<Char,Pair<Int, Animatable<Float, AnimationVector1D>>>() }
+    //val charList= remember() { mutableStateListOf<Char>() }
+    LaunchedEffect(mascotEventType) {
+        when (val eventType = mascotEventType) {
             MascotEventType.Explosion -> TODO()//コンパイルエラー
             MascotEventType.Fall -> TODO()//ランダム
-            is MascotEventType.Feed -> TODO()//書き込み
+            is MascotEventType.Feed -> {
+                val anim = Animatable(0f)
+                charList[eventType.char] = Random.nextInt(imageSizeDp.value.roundToInt() ) to  anim
+                coroutineScope.launch {
+                    anim.animateTo(imageSizeDp.value, tween(2000, easing = EaseOutBounce))
+                    charList.remove(eventType.char)
+                }
+               // mascotState.change(MascotEventType.None)
+                println(charList.toList().joinToString())
+                return@LaunchedEffect
+            }//タイピング
             MascotEventType.Gaming -> TODO()//ランダム
             MascotEventType.None -> {
-                gifName="stay.gif"
+                gifName = "SUC.webp"
             }
+
             MascotEventType.Run -> {
                 //TODO アニメーション書いてちょ
 
@@ -74,16 +92,16 @@ fun main() = application {
                     val x = (Random.nextFloat() * ScreenSize.widthDp * 0.8)
                     val y = (Random.nextFloat() * ScreenSize.heightDp * 0.8)
 
-                    gifName = if (x > windowState.position.x.value){
-                        if(y >= windowState.position.y.value){
+                    gifName = if (x > windowState.position.x.value) {
+                        if (y >= windowState.position.y.value) {
                             "downright.png"
-                        }else{
+                        } else {
                             "upright.png"
                         }
-                    }else{
-                        if(y > windowState.position.y.value){
+                    } else {
+                        if (y > windowState.position.y.value) {
                             "downleft.png"
-                        }else{
+                        } else {
                             "upleft.png"
                         }
                     }
@@ -98,14 +116,43 @@ fun main() = application {
                     )
                 }
             }
+
             MascotEventType.Speak -> {
                 show = true
+            }
+
+            MascotEventType.DVD -> {
+                /* val x = windowState.position.x.value
+                 val y = windowState.position.y.value
+
+                 //傾き
+                 val bias = Random.nextFloat() * 3 * Random.nextSign()
+
+                 val y1= bias*((ScreenSize.widthDp-imageSizeDp.value)-x)
+                 if (y1-y in 0.0f..(ScreenSize.heightDp-imageSizeDp.value)) {
+                     //水平軸へのCollision
+                     val deltaX=(y-y1)/bias
+
+                 }else{
+                     //垂直軸への
+                 }
+
+
+                 val deltaX = newX - x
+                 val deltaY = newY - y
+                 val distance = hypot(deltaX, deltaY)
+                 val cos = deltaX / distance
+                 val sin = deltaY / distance
+                 if (vertical) {
+
+                 } else {
+
+                 }*/
             }
         }
         //Noneに戻す
         mascotState.change(MascotEventType.None)
     }
-
     //Windowを表示
     Window(
         onCloseRequest = ::exitApplication,
@@ -123,7 +170,7 @@ fun main() = application {
             }
                 ?.animate() ?: ImageBitmap.Blank,
                 null,
-                Modifier.size(175.dp)
+                Modifier.size(imageSizeDp)
             )
             if (show) {
                 Box(
@@ -163,8 +210,19 @@ fun main() = application {
                     )
                 }
             }
+            charList.forEach { (c, a) ->
+                val anim by a.second.asState()
+                Text(c.toString(), Modifier.offset(x=a.first.dp,y = anim.dp))
+            }
+        }
+        LaunchedEffect(Unit) {
+            repeat(9999) {
+                mascotState.change(MascotEventType.Feed("あqwせdrftgyふじこlp".random()))
+                delay(750)
+            }
         }
     }
+
     var statisticsWindow by remember { mutableStateOf(true) }
     Tray(painterResource("SUC.png")) {
 
@@ -187,7 +245,6 @@ fun main() = application {
                         }
 
                         y("時間"<Double>()) {
-
                             scale = continuous(0.0..25.5)
                         }
 
@@ -198,28 +255,48 @@ fun main() = application {
 
                             borderLine.width = 0.0
                         }
-
-
-
                         layout {
                             this.size = 1000 to 1000
-                            title = "Simple plot with lets-plot"
-                            caption = "See `examples` section for more\n complicated and interesting examples!"
                         }
                     }.toBufferedImage().toComposeImageBitmap()
                 }
-                Column {
-                    Image(graphImage, null, Modifier.fillMaxWidth())
+                Column(Modifier.fillMaxSize()) {
+                    var selectedTabIndex by remember { mutableStateOf(0) }
+                    TabRow(selectedTabIndex,Modifier.weight(0.1f)){
+                        Tab(selectedTabIndex==0,{
+                            selectedTabIndex=0
+                        }){
+                            Text("統計")
+                        }
+                        Tab(selectedTabIndex==1,{
+                            selectedTabIndex=1
+                        }){
+                            Text("設定")
+                        }
+                    }
+                    Column(Modifier.weight(0.8f)) {
+                        when(selectedTabIndex){
+                            0->{
 
+                                Text("一週間のプログラミング時間",Modifier.padding(10.dp), fontSize = 25.sp)
+                                Image(graphImage, null, Modifier.fillMaxWidth())
+                            }
+                            1->{
 
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 }
 
+val imageSizeDp: Dp = 175.dp
 val simpleDataset = mapOf(
     "言語" to listOf(0, 1, 2, 4, 5, 7, 8, 9).map { "Kt$it" },
     "時間" to listOf(12.0, 14.2, 15.1, 15.9, 17.9, 15.6, 14.2, 24.3),
     "humidity" to listOf(0.5, 0.32, 0.11, 0.89, 0.68, 0.57, 0.56, 0.5)
 )
+
+fun Random.Default.nextSign() = if (nextBoolean()) 1 else -1
