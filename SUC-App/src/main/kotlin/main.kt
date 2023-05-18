@@ -216,12 +216,6 @@ fun main() = application {
                 Text(c.toString(), Modifier.offset(x=a.first.dp,y = anim.dp))
             }
         }
-        LaunchedEffect(Unit) {
-            repeat(9999) {
-                mascotState.change(MascotEventType.Feed("あqwせdrftgyふじこlp".random()))
-                delay(750)
-            }
-        }
     }
 
     var statisticsWindow by remember { mutableStateOf(true) }
