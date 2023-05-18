@@ -29,7 +29,6 @@
                            displayType="BALLOON"/>
         <typedHandler implementation="me.naotiki.sucideaplugin.listeners.SUCTypedHandler"/>
         <postStartupActivity implementation="me.naotiki.sucideaplugin.listeners.ProjectStartupActivity"/>
-
     </extensions>
     <projectListeners>
         <listener class="me.naotiki.sucideaplugin.listeners.MyListener"

@@ -62,9 +62,11 @@ fun main() = application {
     //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
     var gifName by remember(mascotEventType) { mutableStateOf("SUC.png") }
     var show by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit){
+        mascotState.initServer()
+    }
 
-
-    val charList = remember() { mutableStateMapOf<Char,Pair<Int, Animatable<Float, AnimationVector1D>>>() }
+    val charList = remember { mutableStateMapOf<Char,Pair<Int, Animatable<Float, AnimationVector1D>>>() }
     //val charList= remember() { mutableStateListOf<Char>() }
     LaunchedEffect(mascotEventType) {
         when (val eventType = mascotEventType) {
@@ -79,6 +81,7 @@ fun main() = application {
                 }
                // mascotState.change(MascotEventType.None)
                 println(charList.toList().joinToString())
+                mascotState.recoverEvent()
                 return@LaunchedEffect
             }//タイピング
             MascotEventType.Gaming -> TODO()//ランダム

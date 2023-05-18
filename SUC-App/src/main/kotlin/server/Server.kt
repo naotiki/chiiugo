@@ -13,7 +13,6 @@ import java.net.ServerSocket
 import java.net.Socket
 import java.nio.ByteBuffer
 
-const val PORT = 0xCAD
 class Server(val port: Int=PORT) {
     val serverSocket = ServerSocket(port)
     suspend fun runServer()= withContext(Dispatchers.IO){
@@ -26,38 +25,38 @@ class Server(val port: Int=PORT) {
         }
 
     }
-}
-class ServerThread(val socket: Socket) : Thread() {
-    override fun run() {
-        println("Ready")
-        var sin = DataInputStream(socket.getInputStream())
-        var sout = socket.getOutputStream()
-        println("Connected")
-        while (this.isAlive) {
-            if (sin.available() >= HeaderSize) {
-                val size =sin.readInt()
-                print("Size=$size:")
-                val data=Cbor.decodeFromByteArray<ServerProtocol>(sin.readNBytes(size))
-                println(data)
 
+    private val callbacks= mutableListOf<(ServerProtocol.SendEvent)->Unit>()
+    fun onEventReceive( block:(ServerProtocol.SendEvent)->Unit){
+        callbacks.add(block)
+    }
+    inner class ServerThread(val socket: Socket) : Thread() {
+        @OptIn(ExperimentalSerializationApi::class)
+        override fun run() {
+            println("Ready")
+            val sin = DataInputStream(socket.getInputStream())
+            println("Connected")
+            while (this.isAlive) {
+                if (sin.available() >= HeaderSize) {
+                    val size =sin.readInt()
+                    print("Size=$size:")
+                    val data=Cbor.decodeFromByteArray<ServerProtocol>(sin.readNBytes(size))
+                    if (data is ServerProtocol.SendEvent){
+                        callbacks.forEach { it(data) }
+                    }
+                    println(data)
+                }
 
-            }
-
-            if (socket.isClosed) {
-                break
+                if (socket.isClosed) {
+                    break
+                }
             }
         }
     }
 }
 
 
-const val HeaderSize = Int.SIZE_BYTES
-fun ByteArray.addHeader(): ByteArray {
 
-    return ByteBuffer.allocate(HeaderSize + size).putInt(size).put(this).array()
-}
-//   Header(n)      Body
-//   [4 Byte]     [n Byte]
 
 private fun main() {
     runBlocking {
