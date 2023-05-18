@@ -5,7 +5,15 @@ plugins {
     id("org.jetbrains.compose")
     kotlin("plugin.serialization") version "1.8.10"
 }
-
+sourceSets{
+    kotlin{
+        main{
+            kotlin{
+                srcDir("../suc-protocol")
+            }
+        }
+    }
+}
 repositories {
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")

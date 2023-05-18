@@ -1,7 +1,6 @@
 
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -28,6 +27,7 @@ class Server(val port: Int=PORT) {
     }
 }
 class ServerThread(val socket: Socket) : Thread() {
+    @OptIn(ExperimentalSerializationApi::class)
     override fun run() {
         println("Ready")
         var sin = DataInputStream(socket.getInputStream())
@@ -38,9 +38,26 @@ class ServerThread(val socket: Socket) : Thread() {
                 val size =sin.readInt()
                 print("Size=$size:")
                 val data=Cbor.decodeFromByteArray<ServerProtocol>(sin.readNBytes(size))
-                println(data)
+                when(data){
+                    ServerProtocol.Hello -> TODO()
+                    ServerProtocol.GetCodingTime -> TODO()
+                    is ServerProtocol.CodingTime -> {
 
+                    }
+                    is ServerProtocol.SendEvent -> {
+                        when (data.event) {
+                            is Event.FailedBuild -> TODO()
+                            is Event.OpenProject -> TODO()
+                            is Event.StartBuild -> TODO()
+                            is Event.SuccessBuild -> TODO()
+                            is Event.Typed -> TODO()
+                            else -> {}
+                        }
+                    }
+                    ServerProtocol.End -> TODO()
+                    else -> {}
 
+                }
             }
 
             if (socket.isClosed) {
@@ -93,9 +110,3 @@ fun ByteArray.addHeader(): ByteArray {
 }
 //   Header(n)      Body
 //   [4 Byte]     [n Byte]
-
-private fun main() {
-    runBlocking {
-        Server().runServer()
-    }
-}
