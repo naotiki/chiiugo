@@ -40,8 +40,8 @@ fun main() = application {
     //1dp あたりのpx数を取得 remember いらない
     ScreenSize.density = LocalDensity.current.density
     //Windowサイズや位置の情報が入っている
-    var winX = remember { Random.nextFloat() * ScreenSize.widthDp }
-    var winY = remember { Random.nextFloat() * ScreenSize.heightDp }
+    val winX = remember { Random.nextFloat() * ScreenSize.widthDp }
+    val winY = remember { Random.nextFloat() * ScreenSize.heightDp }
     val windowState = rememberWindowState(size = DpSize.Unspecified, position = WindowPosition(winX.dp, winY.dp))
     //アニメーション用の位置
     val animatedWindowPosition = remember { Animatable(windowState.position as WindowPosition.Absolute,WindowPositionToVector) }
@@ -62,7 +62,7 @@ fun main() = application {
         when(mascotEventType){
             MascotEventType.Explosion -> TODO()//コンパイルエラー
             MascotEventType.Fall -> TODO()//ランダム
-            is MascotEventType.Feed -> TODO()//タイプ
+            is MascotEventType.Feed -> TODO()//書き込み
             MascotEventType.Gaming -> TODO()//ランダム
             MascotEventType.None -> {
                 gifName="stay.gif"
@@ -129,26 +129,30 @@ fun main() = application {
                 Box(
                     modifier = Modifier.padding(start = 150.dp, top = 50.dp).width(150.dp)
                 ) {
-                    var ran by remember { mutableStateOf((0..8).random()) }
-                    LaunchedEffect(Unit) {
-                        while (true) {
-                            ran = (0..8).random()
-                            delay(5000)
-                        }
-                    }
+                    var ran by remember { mutableStateOf((0..14).random()) }
                     val text = listOf(
                         "カップルでディズニーに行くとすぐ別れるっていうよね。",
                         "もぅﾏﾁﾞ無理...コンパイルしょ...",
                         "小梅太夫「チャンチャカチャンチャンチャチャンカチャンチャン床に抜け毛が落ちていると思っていたら～～～wwwwww～～…超弦理論でした～～～(11次元宇宙を近くする小梅太夫)あああああﾁｸｼｮｵｵｵｵｵｵｵｵｵｵ超弦理論→～～～",
                         "技術的には可能です(ｷﾘｯ)",
-                        "ﾄﾞﾋｭｩｩｩｩﾝシンフォギアァァァァ!!!ｷｭｷｭｷｭｷｭｲﾝ!ｷｭｷｭｷｭｷｭｲﾝ!ｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｲﾝ!\n" +
-                                "ﾎﾟｫﾛﾎﾟﾎﾟﾎﾟﾎﾟﾍﾟﾍﾟﾍﾟﾍﾟﾋﾟﾋﾟﾋﾟﾋﾟﾋﾟｰﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟｰ♪",
+                        "ﾄﾞﾋｭｩｩｩｩﾝシンフォギアァァァァ!!!ｷｭｷｭｷｭｷｭｲﾝ!ｷｭｷｭｷｭｷｭｲﾝ!ｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｲﾝ!\n" + "ﾎﾟｫﾛﾎﾟﾎﾟﾎﾟﾎﾟﾍﾟﾍﾟﾍﾟﾍﾟﾋﾟﾋﾟﾋﾟﾋﾟﾋﾟｰﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟｰ♪",
                         "も　う　ダ　メ　ぽ",
                         "♪～",
                         "ｾｰﾝｷｮ❗\uFE0Fｾﾝｷｮ❗\uFE0Fｱｶﾙｲｾﾝｷｮｰ‼\uFE0Fｾｰﾝｷｮ❗\uFE0Fｾﾝｷｮ❗\uFE0Fｱｶﾙｲｾﾝｷｮｰ‼\uFE0F⤴\uFE0F",
                         "すごい楽しい素晴らしいソフトがあるんですよBlenderっていうんですけどね，",
-
+                        "あっ産地が直送されてきた",
+                        "消しゴムマジックで消してやるのさ☆",
+                        "俺モテすぎるから誰からもチョコ受け取らないんだよね",
+                        "お前守るよ(ｲｹｳﾞｫ)",
+                        "Twitterは脳を粉々に破壊するよ",
+                        "レターパックで現金送れ"
                         )
+                    LaunchedEffect(Unit) {
+                        while (true) {
+                            ran = text.indices.random()
+                            delay(5000)
+                        }
+                    }
                     Text(
                         text[ran], modifier = Modifier
                             .background(
@@ -157,7 +161,7 @@ fun main() = application {
                             )
                             .padding(10.dp)
                     )
-            }
+                }
             }
         }
     }
