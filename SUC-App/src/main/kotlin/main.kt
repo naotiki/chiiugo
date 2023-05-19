@@ -68,7 +68,6 @@ fun main() = application {
         mascotState.initServer()
     }
 
-    val charList = remember { mutableStateMapOf<Char,Pair<Int, Animatable<Float, AnimationVector1D>>>() }
     //val charList= remember() { mutableStateListOf<Char>() }
     LaunchedEffect(mascotEventType) {
         when (val eventType = mascotEventType) {
