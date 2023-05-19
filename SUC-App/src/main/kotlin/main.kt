@@ -85,6 +85,7 @@ fun main() = application {
             MascotEventType.Explosion -> TODO()//コンパイルエラー
             MascotEventType.Fall -> TODO()//ランダム
             MascotEventType.Gaming -> {
+                gifName="upleft.gif"
                 while(true){
                     var random = Color(colorList.random())
                     while (colorState == random) {
@@ -108,13 +109,13 @@ fun main() = application {
                         if (y >= windowState.position.y.value) {
                             "downright.png"
                         } else {
-                            "upright.png"
+                            "upright.gif"
                         }
                     } else {
                         if (y > windowState.position.y.value) {
                             "downleft.png"
                         } else {
-                            "upleft.png"
+                            "upleft.gif"
                         }
                     }
                     animatedWindowPosition.animateTo(
@@ -192,7 +193,7 @@ fun main() = application {
             }
                 ?.animate() ?: ImageBitmap.Blank,
                 null,
-                Modifier.size(imageSizeDp),colorFilter = ColorFilter.tint(colorstate, BlendMode.Multiply),
+                Modifier.size(imageSizeDp),colorFilter = ColorFilter.tint(colorState, BlendMode.Modulate),
             )
             val serif by mascotState.serifFlow.collectAsState()
             if (serif!=null) {
