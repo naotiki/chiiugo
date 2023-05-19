@@ -64,6 +64,11 @@ fun main() = application {
     val color = remember { androidx.compose.animation.Animatable(Color.Black/*初期の色*/) }
     val colorstate by color.asState()
     val charList = remember() { mutableStateMapOf<Char,Pair<Int, Animatable<Float, AnimationVector1D>>>() }
+    LaunchedEffect(Unit){
+        mascotState.initServer()
+    }
+
+    val charList = remember { mutableStateMapOf<Char,Pair<Int, Animatable<Float, AnimationVector1D>>>() }
     //val charList= remember() { mutableStateListOf<Char>() }
     LaunchedEffect(mascotEventType) {
         when (val eventType = mascotEventType) {
@@ -78,6 +83,7 @@ fun main() = application {
                 }
                // mascotState.change(MascotEventType.None)
                 println(charList.toList().joinToString())
+                mascotState.recoverEvent()
                 return@LaunchedEffect
             }//タイピング
             MascotEventType.Gaming -> {

@@ -7,7 +7,15 @@ plugins {
 
 group = "me.naotiki"
 version = "1.0-SNAPSHOT"
-
+sourceSets{
+    kotlin{
+        main{
+            kotlin{
+                srcDir("../suc-protocol")
+            }
+        }
+    }
+}
 repositories {
     mavenCentral()
 }

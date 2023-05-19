@@ -1,6 +1,8 @@
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
+import java.nio.ByteBuffer
+
 
 @Serializable
 sealed interface Event {
@@ -36,4 +38,10 @@ sealed interface ServerProtocol {
         return Cbor.encodeToByteArray(serializer(),this).addHeader()
     }
 
+}
+const val PORT=0xCAD
+const val HeaderSize = Int.SIZE_BYTES
+fun ByteArray.addHeader(): ByteArray {
+
+    return ByteBuffer.allocate(HeaderSize + size).putInt(size).put(this).array()
 }
