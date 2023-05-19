@@ -29,6 +29,7 @@
                            displayType="BALLOON"/>
         <typedHandler implementation="me.naotiki.sucideaplugin.listeners.SUCTypedHandler"/>
         <postStartupActivity implementation="me.naotiki.sucideaplugin.listeners.ProjectStartupActivity"/>
+      <!--  <editorFactoryDocumentListener implementation="me.naotiki.sucideaplugin.listeners.DocLis"/>-->
     </extensions>
     <projectListeners>
         <listener class="me.naotiki.sucideaplugin.listeners.MyListener"

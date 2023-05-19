@@ -30,9 +30,9 @@ import org.jetbrains.kotlinx.kandy.letsplot.layers.bars
 import org.jetbrains.kotlinx.kandy.letsplot.layout
 import org.jetbrains.kotlinx.kandy.letsplot.x
 import org.jetbrains.kotlinx.kandy.letsplot.y
+import java.awt.SystemColor.text
 import kotlin.math.roundToInt
 import kotlin.random.Random
-import kotlin.random.nextInt
 import org.jetbrains.kotlinx.kandy.util.color.Color.Companion as KandyColor
 
 
@@ -55,17 +55,20 @@ fun main() = application {
     }
 
     //SUCの状態
-    val mascotState = rememberMascotState(MascotEventType.Gaming)
+    val mascotState = rememberMascotState(MascotEventType.Run)
     val mascotEventType by mascotState.flow.collectAsState()
     //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
     var gifName by remember(mascotEventType) { mutableStateOf("SUC.png") }
     var show by remember { mutableStateOf(true) }
     val colorList = listOf<Long>(0xFFFFFF00, 0xFF00FF00, 0xFFFF0000, 0xFF0000FF, 0xFF7DEBEB, 0xFFFF9B00,0xFF800080,0xFFFF1493)
-    val color = remember { androidx.compose.animation.Animatable(Color.Black/*初期の色*/) }
+    val color = remember { androidx.compose.animation.Animatable(Color.White/*初期の色*/) }
     val colorstate by color.asState()
     val charList = remember() { mutableStateMapOf<Char,Pair<Int, Animatable<Float, AnimationVector1D>>>() }
     LaunchedEffect(Unit){
-        mascotState.initServer()
+        launch{ mascotState.initServer() }
+        while (true){
+            mascotState.speak(texts.random(),5000)
+        }
     }
 
     //val charList= remember() { mutableStateListOf<Char>() }
@@ -75,22 +78,24 @@ fun main() = application {
             MascotEventType.Fall -> TODO()//ランダム
             is MascotEventType.Feed -> {
                 val anim = Animatable(0f)
-                charList[eventType.char] = Random.nextInt(imageSizeDp.value.roundToInt() ) to  anim
+                charList[eventType.char] = Random.nextInt(imageSizeDp.value.roundToInt()) to anim
                 coroutineScope.launch {
                     anim.animateTo(imageSizeDp.value, tween(2000, easing = EaseOutBounce))
                     charList.remove(eventType.char)
                 }
-               // mascotState.change(MascotEventType.None)
+                // mascotState.change(MascotEventType.None)
                 println(charList.toList().joinToString())
                 mascotState.recoverEvent()
                 return@LaunchedEffect
             }//タイピング
             MascotEventType.Gaming -> {
-                var random = Color(colorList.random())
-                while (colorstate == random) {
-                    random = Color(colorList.random())
+                while(true){
+                    var random = Color(colorList.random())
+                    while (colorstate == random) {
+                        random = Color(colorList.random())
+                    }
+                    color.animateTo(random, tween(160, easing = EaseInBack))
                 }
-                color.animateTo(random, tween(160, easing = EaseInBack))
             }
             MascotEventType.None -> {
                 gifName = "SUC.webp"
@@ -127,10 +132,17 @@ fun main() = application {
                     )
                 }
             }
-
-            MascotEventType.Speak -> {
-                show = true
+            /*MascotEventType.Chat->{
+                while (true){
+                    serif=texts.random()
+                    delay(5000)
+                }
             }
+            is MascotEventType.Speak -> {
+                serif=eventType.text
+                delay(5000)
+                mascotState.recoverEvent()
+            }*/
 
             MascotEventType.DVD -> {
                 /* val x = windowState.position.x.value
@@ -160,6 +172,9 @@ fun main() = application {
 
                  }*/
             }
+
+            MascotEventType.Chat -> TODO()
+            is MascotEventType.Speak -> TODO()
         }
         //Noneに戻す
         mascotState.change(MascotEventType.None)
@@ -183,36 +198,13 @@ fun main() = application {
                 null,
                 Modifier.size(imageSizeDp),colorFilter = ColorFilter.tint(colorstate, BlendMode.Multiply),
             )
-            if (show) {
+            val serif by mascotState.serifFlow.collectAsState()
+            if (serif!=null) {
                 Box(
                     modifier = Modifier.padding(start = 150.dp, top = 50.dp).width(150.dp)
                 ) {
-                    var ran by remember { mutableStateOf((0..14).random()) }
-                    val text = listOf(
-                        "カップルでディズニーに行くとすぐ別れるっていうよね。",
-                        "もぅﾏﾁﾞ無理...コンパイルしょ...",
-                        "小梅太夫「チャンチャカチャンチャンチャチャンカチャンチャン床に抜け毛が落ちていると思っていたら～～～wwwwww～～…超弦理論でした～～～(11次元宇宙を近くする小梅太夫)あああああﾁｸｼｮｵｵｵｵｵｵｵｵｵｵ超弦理論→～～～",
-                        "技術的には可能です(ｷﾘｯ)",
-                        "ﾄﾞﾋｭｩｩｩｩﾝシンフォギアァァァァ!!!ｷｭｷｭｷｭｷｭｲﾝ!ｷｭｷｭｷｭｷｭｲﾝ!ｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｲﾝ!\n" + "ﾎﾟｫﾛﾎﾟﾎﾟﾎﾟﾎﾟﾍﾟﾍﾟﾍﾟﾍﾟﾋﾟﾋﾟﾋﾟﾋﾟﾋﾟｰﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟｰ♪",
-                        "も　う　ダ　メ　ぽ",
-                        "♪～",
-                        "ｾｰﾝｷｮ❗\uFE0Fｾﾝｷｮ❗\uFE0Fｱｶﾙｲｾﾝｷｮｰ‼\uFE0Fｾｰﾝｷｮ❗\uFE0Fｾﾝｷｮ❗\uFE0Fｱｶﾙｲｾﾝｷｮｰ‼\uFE0F⤴\uFE0F",
-                        "すごい楽しい素晴らしいソフトがあるんですよBlenderっていうんですけどね，",
-                        "あっ産地が直送されてきた",
-                        "消しゴムマジックで消してやるのさ☆",
-                        "俺モテすぎるから誰からもチョコ受け取らないんだよね",
-                        "お前守るよ(ｲｹｳﾞｫ)",
-                        "Twitterは脳を粉々に破壊するよ",
-                        "レターパックで現金送れ"
-                        )
-                    LaunchedEffect(Unit) {
-                        while (true) {
-                            ran = text.indices.random()
-                            delay(5000)
-                        }
-                    }
                     Text(
-                        text[ran], modifier = Modifier
+                        serif?:"", modifier = Modifier
                             .background(
                                 color = Color(0xff5ff4ac),
                                 shape = RoundedCornerShape(30)
@@ -220,10 +212,10 @@ fun main() = application {
                             .padding(10.dp)
                     )
                 }
-            }
+            }else Spacer(Modifier.width(300.dp))
             charList.forEach { (c, a) ->
                 val anim by a.second.asState()
-                Text(c.toString(), Modifier.offset(x=a.first.dp,y = anim.dp))
+                Text(c.toString(), Modifier.offset(x = a.first.dp, y = anim.dp))
             }
         }
     }
@@ -267,26 +259,27 @@ fun main() = application {
                 }
                 Column(Modifier.fillMaxSize()) {
                     var selectedTabIndex by remember { mutableStateOf(0) }
-                    TabRow(selectedTabIndex,Modifier.weight(0.1f)){
-                        Tab(selectedTabIndex==0,{
-                            selectedTabIndex=0
-                        }){
+                    TabRow(selectedTabIndex, Modifier.weight(0.1f)) {
+                        Tab(selectedTabIndex == 0, {
+                            selectedTabIndex = 0
+                        }) {
                             Text("統計")
                         }
-                        Tab(selectedTabIndex==1,{
-                            selectedTabIndex=1
-                        }){
+                        Tab(selectedTabIndex == 1, {
+                            selectedTabIndex = 1
+                        }) {
                             Text("設定")
                         }
                     }
                     Column(Modifier.weight(0.8f)) {
-                        when(selectedTabIndex){
-                            0->{
+                        when (selectedTabIndex) {
+                            0 -> {
 
-                                Text("一週間のプログラミング時間",Modifier.padding(10.dp), fontSize = 25.sp)
+                                Text("一週間のプログラミング時間", Modifier.padding(10.dp), fontSize = 25.sp)
                                 Image(graphImage, null, Modifier.fillMaxWidth())
                             }
-                            1->{
+
+                            1 -> {
 
                             }
                         }
