@@ -7,9 +7,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
@@ -57,13 +55,14 @@ fun main() = application {
     }
 
     //SUCの状態
-    val mascotState = rememberMascotState(MascotEventType.Run)
+    val mascotState = rememberMascotState(MascotEventType.Gaming)
     val mascotEventType by mascotState.flow.collectAsState()
     //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
     var gifName by remember(mascotEventType) { mutableStateOf("SUC.png") }
     var show by remember { mutableStateOf(true) }
-
-
+    val colorList = listOf<Long>(0xFFFFFF00, 0xFF00FF00, 0xFFFF0000, 0xFF0000FF, 0xFF7DEBEB, 0xFFFF9B00,0xFF800080,0xFFFF1493)
+    val color = remember { androidx.compose.animation.Animatable(Color.Black/*初期の色*/) }
+    val colorstate by color.asState()
     val charList = remember() { mutableStateMapOf<Char,Pair<Int, Animatable<Float, AnimationVector1D>>>() }
     //val charList= remember() { mutableStateListOf<Char>() }
     LaunchedEffect(mascotEventType) {
@@ -81,7 +80,13 @@ fun main() = application {
                 println(charList.toList().joinToString())
                 return@LaunchedEffect
             }//タイピング
-            MascotEventType.Gaming -> TODO()//ランダム
+            MascotEventType.Gaming -> {
+                var random = Color(colorList.random())
+                while (colorstate == random) {
+                    random = Color(colorList.random())
+                }
+                color.animateTo(random, tween(160, easing = EaseInBack))
+            }
             MascotEventType.None -> {
                 gifName = "SUC.webp"
             }
@@ -171,7 +176,7 @@ fun main() = application {
             }
                 ?.animate() ?: ImageBitmap.Blank,
                 null,
-                Modifier.size(imageSizeDp)
+                Modifier.size(imageSizeDp),colorFilter = ColorFilter.tint(colorstate, BlendMode.Multiply),
             )
             if (show) {
                 Box(
