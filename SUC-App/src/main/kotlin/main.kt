@@ -107,13 +107,13 @@ fun main() = application {
 
                     gifName = if (x > windowState.position.x.value) {
                         if (y >= windowState.position.y.value) {
-                            "downright.png"
+                            "downright.gif"
                         } else {
                             "upright.gif"
                         }
                     } else {
                         if (y > windowState.position.y.value) {
-                            "downleft.png"
+                            "downleft.gif"
                         } else {
                             "upleft.gif"
                         }
