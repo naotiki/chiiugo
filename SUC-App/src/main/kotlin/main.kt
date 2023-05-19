@@ -6,7 +6,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -14,7 +13,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.animatedimage.Blank
 import org.jetbrains.compose.animatedimage.animate
@@ -30,7 +29,6 @@ import org.jetbrains.kotlinx.kandy.letsplot.layers.bars
 import org.jetbrains.kotlinx.kandy.letsplot.layout
 import org.jetbrains.kotlinx.kandy.letsplot.x
 import org.jetbrains.kotlinx.kandy.letsplot.y
-import java.awt.SystemColor.text
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import org.jetbrains.kotlinx.kandy.util.color.Color.Companion as KandyColor
@@ -62,10 +60,20 @@ fun main() = application {
     var show by remember { mutableStateOf(true) }
     val colorList = listOf<Long>(0xFFFFFF00, 0xFF00FF00, 0xFFFF0000, 0xFF0000FF, 0xFF7DEBEB, 0xFFFF9B00,0xFF800080,0xFFFF1493)
     val color = remember { androidx.compose.animation.Animatable(Color.White/*初期の色*/) }
-    val colorstate by color.asState()
-    val charList = remember() { mutableStateMapOf<Char,Pair<Int, Animatable<Float, AnimationVector1D>>>() }
+    val colorState by color.asState()
+    val charMap = remember { mutableStateMapOf<Char, Pair<Int, Animatable<Float, AnimationVector1D>>>() }
     LaunchedEffect(Unit){
         launch{ mascotState.initServer() }
+        launch {//タイピング連動機能
+            mascotState.charFlow.collectLatest {
+                val anim = Animatable(0f)
+                charMap[it] = Random.nextInt(imageSizeDp.value.roundToInt()) to anim
+                launch {
+                    anim.animateTo(imageSizeDp.value, tween(2000, easing = EaseOutBounce))
+                    charMap.remove(it)
+                }
+            }
+        }
         while (true){
             mascotState.speak(texts.random(),5000)
         }
@@ -76,22 +84,10 @@ fun main() = application {
         when (val eventType = mascotEventType) {
             MascotEventType.Explosion -> TODO()//コンパイルエラー
             MascotEventType.Fall -> TODO()//ランダム
-            is MascotEventType.Feed -> {
-                val anim = Animatable(0f)
-                charList[eventType.char] = Random.nextInt(imageSizeDp.value.roundToInt()) to anim
-                coroutineScope.launch {
-                    anim.animateTo(imageSizeDp.value, tween(2000, easing = EaseOutBounce))
-                    charList.remove(eventType.char)
-                }
-                // mascotState.change(MascotEventType.None)
-                println(charList.toList().joinToString())
-                mascotState.recoverEvent()
-                return@LaunchedEffect
-            }//タイピング
             MascotEventType.Gaming -> {
                 while(true){
                     var random = Color(colorList.random())
-                    while (colorstate == random) {
+                    while (colorState == random) {
                         random = Color(colorList.random())
                     }
                     color.animateTo(random, tween(160, easing = EaseInBack))
@@ -213,7 +209,7 @@ fun main() = application {
                     )
                 }
             }else Spacer(Modifier.width(300.dp))
-            charList.forEach { (c, a) ->
+            charMap.forEach { (c, a) ->
                 val anim by a.second.asState()
                 Text(c.toString(), Modifier.offset(x = a.first.dp, y = anim.dp))
             }

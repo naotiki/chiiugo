@@ -1,17 +1,16 @@
-import MascotEventType.Feed
 import androidx.compose.runtime.*
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 
 sealed interface MascotEventType {
     //なにもないよ
     object None : MascotEventType
     object Run : MascotEventType
+
     //ランダムに喋る
-    object Chat:MascotEventType
-    data class Speak(val text:String) : MascotEventType
+    object Chat : MascotEventType
+    data class Speak(val text: String) : MascotEventType
     object Gaming : MascotEventType
 
     //転ぶ
@@ -22,9 +21,8 @@ sealed interface MascotEventType {
 
     object DVD : MascotEventType
 
-    //餌食うよ
-    data class Feed(val char: Char) : MascotEventType
 }
+
 
 class MascotState(mascotEventType: MascotEventType) {
     private val stateFlow = MutableStateFlow(mascotEventType)
@@ -36,13 +34,14 @@ class MascotState(mascotEventType: MascotEventType) {
                 when (val e = it.event) {
                     is Event.FailedBuild -> TODO()
                     is Event.OpenProject -> {
-                        speak(e.projectName+"を開きました！",5000,true)
+                        speak(e.projectName + "を開きました！", 5000, true)
                         //change(Speak(e.projectName))
                     }
+
                     is Event.StartBuild -> TODO()
                     is Event.SuccessBuild -> TODO()
                     is Event.Typed -> {
-                        change(Feed(e.char))
+                        feed(e.char)
                     }
                 }
             }
@@ -51,34 +50,42 @@ class MascotState(mascotEventType: MascotEventType) {
         server.runServer()
 
     }
+
     //nullで吹き出し非表示
     private val serif = MutableStateFlow<String?>(null)
     val serifFlow = serif.asStateFlow()
-    suspend fun speak(string: String,delayMillis:Long, important:Boolean=false ){
-        if (important){
+    suspend fun speak(string: String, delayMillis: Long, important: Boolean = false) {
+        if (important) {
             serif.emit(string)
-        }else if(serif.value==null){
+        } else if (serif.value == null) {
             serif.emit(string)
-        }else return
+        } else return
         delay(delayMillis)
         serif.emit(null)
     }
 
 
-
-
     private var previousEventType by mutableStateOf<MascotEventType>(MascotEventType.None)
     suspend fun change(state: MascotEventType) {
-        previousEventType=stateFlow.value
+        previousEventType = stateFlow.value
         stateFlow.emit(state)
     }
-    suspend fun recoverEvent(){
+
+    suspend fun recoverEvent() {
         stateFlow.emit(previousEventType)
+    }
+
+
+    val charFlow= MutableSharedFlow<Char>()
+    suspend fun feed(char: Char) {
+        charFlow.emit(char)
     }
 }
 
 @Composable
-fun rememberMascotState(initialMascotEventType: MascotEventType = MascotEventType.None) =
+fun rememberMascotState(
+    initialMascotEventType: MascotEventType = MascotEventType.None
+) =
     remember { MascotState(initialMascotEventType) }
 
 val texts = arrayOf(
