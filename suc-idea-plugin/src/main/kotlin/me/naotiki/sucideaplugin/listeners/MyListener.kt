@@ -84,7 +84,6 @@ class ProjectStartupActivity : StartupActivity {
         val started = application
             .getService(SocketService::class.java)
         started.startServer()
-        started.sendData(ServerProtocol.Hello)
         started.sendData(
             ServerProtocol.SendEvent(
                 Event.OpenProject(project.name)

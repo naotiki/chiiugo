@@ -35,6 +35,7 @@ import kotlin.random.Random
 import org.jetbrains.kotlinx.kandy.util.color.Color.Companion as KandyColor
 
 
+val colorList = listOf<Long>(0xFFFFFF00, 0xFF00FF00, 0xFFFF0000, 0xFF0000FF, 0xFF7DEBEB, 0xFFFF9B00,0xFF800080,0xFFFF1493)
 @OptIn(ExperimentalResourceApi::class)
 fun main() = application {
     //1dp あたりのpx数を取得 remember いらない
@@ -57,9 +58,7 @@ fun main() = application {
     val mascotState = rememberMascotState(MascotEventType.Run)
     val mascotEventType by mascotState.flow.collectAsState()
     //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
-    var gifName by remember(mascotEventType) { mutableStateOf("SUC.png") }
-    var show by remember { mutableStateOf(true) }
-    val colorList = listOf<Long>(0xFFFFFF00, 0xFF00FF00, 0xFFFF0000, 0xFF0000FF, 0xFF7DEBEB, 0xFFFF9B00,0xFF800080,0xFFFF1493)
+    var gifName by remember(mascotEventType) { mutableStateOf("SUC.gif") }
     val color = remember { androidx.compose.animation.Animatable(Color.White/*初期の色*/) }
     val colorState by color.asState()
     val charMap = remember { mutableStateListOf< Pair<Char,Pair<Int, Animatable<Float, AnimationVector1D>>>>() }
@@ -71,7 +70,7 @@ fun main() = application {
                 val e=it to ( Random.nextInt(imageSizeDp.value.roundToInt()) to anim)
                 charMap.add(e)
                 coroutineScope.launch {
-                    anim.animateTo(imageSizeDp.value, tween(2000, easing = EaseOutBounce))
+                    anim.animateTo(imageSizeDp.value-10, tween(2000, easing = EaseOutBounce))
                     delay(Random.nextLong(500,2000))
                     charMap.remove(e)
                 }
@@ -215,7 +214,7 @@ fun main() = application {
             }else Spacer(Modifier.width(300.dp))
             charMap.forEach { (c, a) ->
                 val anim by a.second.asState()
-                Text(c.toString(), Modifier.offset(x = a.first.dp, y = anim.dp))
+                Text(c.toString(), Modifier.offset(x = a.first.dp, y = anim.dp),color=Color.Red)
             }
         }
     }
@@ -233,10 +232,6 @@ fun main() = application {
 }
 
 val imageSizeDp: Dp = 175.dp
-val simpleDataset = mapOf(
-    "言語" to listOf(0, 1, 2, 4, 5, 7, 8, 9).map { "Kt$it" },
-    "時間" to listOf(12.0, 14.2, 15.1, 15.9, 17.9, 15.6, 14.2, 24.3),
-    "humidity" to listOf(0.5, 0.32, 0.11, 0.89, 0.68, 0.57, 0.56, 0.5)
-)
+
 
 fun Random.Default.nextSign() = if (nextBoolean()) 1 else -1

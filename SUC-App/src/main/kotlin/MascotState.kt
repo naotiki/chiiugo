@@ -2,6 +2,7 @@ import androidx.compose.runtime.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.DateTimeUnit
@@ -38,7 +39,7 @@ class MascotState(mascotEventType: MascotEventType) {
                 when (val e = it.event) {
                     is Event.FailedBuild -> TODO()
                     is Event.OpenProject -> {
-                        speak(e.projectName + "を開きました！", 5000, true)
+                        speak(e.projectName + "を開きました！", 10000, true)
                         //change(Speak(e.projectName))
                     }
 
@@ -64,13 +65,14 @@ class MascotState(mascotEventType: MascotEventType) {
     private val serif = MutableStateFlow<String?>(null)
     val serifFlow = serif.asStateFlow()
     suspend fun speak(string: String, delayMillis: Long, important: Boolean = false) {
+        println("Say $important ${serif.value}→ $string")
         if (important) {
             serif.emit(string)
         } else if (serif.value == null) {
             serif.emit(string)
-        } else return
+        } else return delay(1000)//yield()でもOK return のみだとUI Threadがブロックされる
         delay(delayMillis)
-        serif.emit(null)
+        serif.compareAndSet(string,null)
     }
 
 

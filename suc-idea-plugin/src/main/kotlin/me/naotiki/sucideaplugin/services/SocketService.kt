@@ -3,6 +3,7 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.refactoring.rename.RenameUsagesCollector.Companion.started
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
@@ -47,6 +48,7 @@ class SocketService : Disposable {
                     }
                 }
             }
+            sendData(ServerProtocol.Hello)
         }.fold({
             true
         }, {
@@ -68,6 +70,7 @@ class SocketService : Disposable {
     }
 
     fun closeServer(){
+        println("Close Server")
         coroutineScope.cancel()
         coroutineScope= CoroutineScope(Dispatchers.IO)
         socket?.close()

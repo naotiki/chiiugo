@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.refactoring.rename.RenameUsagesCollector.Companion.started
 
 class PopupDialogAction : AnAction() {
 
@@ -17,6 +18,14 @@ class PopupDialogAction : AnAction() {
     }
     override fun actionPerformed(e: AnActionEvent) {
         server.startServer()
+        val project=e.project
+        if (project!=null){
+            server.sendData(
+                ServerProtocol.SendEvent(
+                    Event.OpenProject(project.name)
+                ),project
+            )
+        }
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
