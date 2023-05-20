@@ -35,4 +35,10 @@
         <listener class="me.naotiki.sucideaplugin.listeners.MyListener"
                   topic="com.intellij.execution.ExecutionListener"/>
     </projectListeners>
+    <actions>
+        <action id="me.naotiki.sucideaplugin.PopupDialogAction" class="me.naotiki.sucideaplugin.PopupDialogAction"
+                text="クライアントに接続" description="SUCクライアントに接続を試みます">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
+    </actions>
 </idea-plugin>

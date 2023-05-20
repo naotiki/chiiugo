@@ -9,22 +9,25 @@ import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import java.io.DataInputStream
 import java.io.IOException
+import java.net.ConnectException
 import java.net.Socket
 import java.net.UnknownHostException
 
 @Service
 class SocketService : Disposable {
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
-    private lateinit var socket: Socket
+    private var coroutineScope = CoroutineScope(Dispatchers.IO)
+    private var socket: Socket?=null
     private val notificationGroup = NotificationGroupManager.getInstance()
         .getNotificationGroup("SUC-Notification")
-
+    val connecting get() = socket?.isConnected==true&&socket?.isClosed==false
     @OptIn(ExperimentalSerializationApi::class)
     fun startServer(): Boolean {
         return runCatching {
+            closeServer()
             socket = Socket("127.0.0.1", PORT)
-            val dataInputStream = DataInputStream(socket.getInputStream())
-
+            val dataInputStream = DataInputStream(socket!!.getInputStream())
+            notificationGroup.createNotification("[Debug] Connected !", NotificationType.INFORMATION)
+                .notify(null)
             coroutineScope.launch {
                 while (isActive) {
                     if (dataInputStream.available() >= HeaderSize) {
@@ -39,6 +42,9 @@ class SocketService : Disposable {
                             }
                         }
                     }
+                    if (!connecting){
+                        closeServer()
+                    }
                 }
             }
         }.fold({
@@ -51,7 +57,7 @@ class SocketService : Disposable {
         })
     }
 
-    private val outputStream get() = socket.getOutputStream()
+    private val outputStream get() = socket!!.getOutputStream()
     fun sendData(serverProtocol: ServerProtocol, project: Project? = null) {
         notificationGroup.createNotification("[Debug] Send: $serverProtocol", NotificationType.INFORMATION)
             .notify(project)
@@ -61,8 +67,14 @@ class SocketService : Disposable {
         }
     }
 
+    fun closeServer(){
+        coroutineScope.cancel()
+        coroutineScope= CoroutineScope(Dispatchers.IO)
+        socket?.close()
+    }
+
     override fun dispose() {
-        socket.close()
+        closeServer()
         coroutineScope.cancel()
     }
 }

@@ -14,6 +14,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
+import com.intellij.util.application
 
 
 class MyListener(val project: Project) : ExecutionListener {
@@ -56,9 +57,10 @@ class MyListener(val project: Project) : ExecutionListener {
 }
 
 class SUCTypedHandler : TypedHandlerDelegate() {
+    private val socket: SocketService = application.getService(SocketService::class.java)
     //IJの補完入力は愛がこもっていないので反応しない。
     override fun charTyped(c: Char, project: Project, editor: Editor, file: PsiFile): Result {
-        project.getService(SocketService::class.java).sendData(
+        socket.sendData(
             ServerProtocol.SendEvent(
                 Event.Typed(c)
             ),project
@@ -79,7 +81,7 @@ class SUCTypedHandler : TypedHandlerDelegate() {
 class ProjectStartupActivity : StartupActivity {
 
     override fun runActivity(project: Project) {
-        val started = project
+        val started = application
             .getService(SocketService::class.java)
         started.startServer()
         started.sendData(ServerProtocol.Hello)
@@ -94,6 +96,7 @@ class ProjectStartupActivity : StartupActivity {
 }
 class TestListener: FileEditorManagerListener {
     override fun fileOpened(source: FileEditorManager, file: VirtualFile) {
+        file.fileType.name
     }
 
 }

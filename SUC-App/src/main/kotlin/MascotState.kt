@@ -2,6 +2,9 @@ import androidx.compose.runtime.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.DateTimeUnit
 
 sealed interface MascotEventType {
     //なにもないよ
@@ -28,6 +31,7 @@ class MascotState(mascotEventType: MascotEventType) {
     private val stateFlow = MutableStateFlow(mascotEventType)
     val flow get() = stateFlow.asStateFlow()
     private val server = Server()
+    val startTime= Clock.System.now()
     suspend fun initServer() {
         server.onEventReceive {
             runBlocking {
@@ -43,6 +47,11 @@ class MascotState(mascotEventType: MascotEventType) {
                     is Event.Typed -> {
                         feed(e.char)
                     }
+                    is Event.OpenFile->{
+
+                    }
+
+                    is Event.CloseFile -> TODO()
                 }
             }
 

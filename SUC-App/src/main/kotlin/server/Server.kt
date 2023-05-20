@@ -22,6 +22,7 @@ class Server(val port: Int=PORT) {
                 val socket=serverSocket.accept()
                 ServerThread(socket).start()
             }
+            println("Server Shutdown")
         }
 
     }
@@ -30,7 +31,7 @@ class Server(val port: Int=PORT) {
     fun onEventReceive( block:(ServerProtocol.SendEvent)->Unit){
         callbacks.add(block)
     }
-    inner class ServerThread(val socket: Socket) : Thread() {
+    inner class ServerThread(private val socket: Socket) : Thread() {
         @OptIn(ExperimentalSerializationApi::class)
         override fun run() {
             println("Ready")
@@ -51,6 +52,12 @@ class Server(val port: Int=PORT) {
                     break
                 }
             }
+            println("End Socket")
+        }
+
+        override fun interrupt() {
+            socket.close()
+            super.interrupt()
         }
     }
 }
