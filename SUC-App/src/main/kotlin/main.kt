@@ -62,16 +62,18 @@ fun main() = application {
     val colorList = listOf<Long>(0xFFFFFF00, 0xFF00FF00, 0xFFFF0000, 0xFF0000FF, 0xFF7DEBEB, 0xFFFF9B00,0xFF800080,0xFFFF1493)
     val color = remember { androidx.compose.animation.Animatable(Color.White/*初期の色*/) }
     val colorState by color.asState()
-    val charMap = remember { mutableStateMapOf<Char, Pair<Int, Animatable<Float, AnimationVector1D>>>() }
+    val charMap = remember { mutableStateListOf< Pair<Char,Pair<Int, Animatable<Float, AnimationVector1D>>>>() }
     LaunchedEffect(Unit){
         launch{ mascotState.initServer() }
         launch {//タイピング連動機能
             mascotState.charFlow.collectLatest {
                 val anim = Animatable(0f)
-                charMap[it] = Random.nextInt(imageSizeDp.value.roundToInt()) to anim
-                launch {
+                val e=it to ( Random.nextInt(imageSizeDp.value.roundToInt()) to anim)
+                charMap.add(e)
+                coroutineScope.launch {
                     anim.animateTo(imageSizeDp.value, tween(2000, easing = EaseOutBounce))
-                    charMap.remove(it)
+                    delay(Random.nextLong(500,2000))
+                    charMap.remove(e)
                 }
             }
         }
