@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.animatedimage.Blank
@@ -219,7 +220,6 @@ fun main() = application {
 
     var statisticsWindow by remember { mutableStateOf(true) }
     Tray(painterResource("SUC.png")) {
-
         Item("統計") {
             statisticsWindow = true
         }
@@ -227,64 +227,7 @@ fun main() = application {
             exitApplication()
         }
     }
-    if (statisticsWindow) {
-        Window(onCloseRequest = { statisticsWindow = false }) {
-            Surface {
-                var graphImage by remember { mutableStateOf(ImageBitmap.Blank) }
-                LaunchedEffect(Unit) {
-                    graphImage = plot(simpleDataset) {
-
-                        x("言語"<String>()) {
-
-                        }
-
-                        y("時間"<Double>()) {
-                            scale = continuous(0.0..25.5)
-                        }
-
-                        bars {
-                            fillColor("humidity"<Double>()) {
-                                scale = continuous(range = KandyColor.YELLOW..KandyColor.RED)
-                            }
-
-                            borderLine.width = 0.0
-                        }
-                        layout {
-                            this.size = 1000 to 1000
-                        }
-                    }.toBufferedImage().toComposeImageBitmap()
-                }
-                Column(Modifier.fillMaxSize()) {
-                    var selectedTabIndex by remember { mutableStateOf(0) }
-                    TabRow(selectedTabIndex, Modifier.weight(0.1f)) {
-                        Tab(selectedTabIndex == 0, {
-                            selectedTabIndex = 0
-                        }) {
-                            Text("統計")
-                        }
-                        Tab(selectedTabIndex == 1, {
-                            selectedTabIndex = 1
-                        }) {
-                            Text("設定")
-                        }
-                    }
-                    Column(Modifier.weight(0.8f)) {
-                        when (selectedTabIndex) {
-                            0 -> {
-
-                                Text("一週間のプログラミング時間", Modifier.padding(10.dp), fontSize = 25.sp)
-                                Image(graphImage, null, Modifier.fillMaxWidth())
-                            }
-
-                            1 -> {
-
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    ControlWindow(statisticsWindow) { statisticsWindow = false }
 }
 
 val imageSizeDp: Dp = 175.dp
