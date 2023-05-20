@@ -16,7 +16,13 @@ sealed interface Event {
     data class FailedBuild(val buildId:String):Event
     @Serializable
     data class Typed(val char: Char):Event
+    @Serializable
+    data class OpenFile(val fileName:String,val fileTypeData: FileTypeData):Event
+    @Serializable
+    data class CloseFile(val fileName:String,val fileTypeData: FileTypeData):Event
 }
+@Serializable
+data class FileTypeData(val idName:String, val displayName:String, val fileTypeExtension: String)
 
 @Serializable
 sealed interface ServerProtocol {
