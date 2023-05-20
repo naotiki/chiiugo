@@ -22,6 +22,8 @@ sealed interface MascotEventType {
 
     object DVD : MascotEventType
 
+    object flyingSUC : MascotEventType
+
 }
 
 class ServerState() {
@@ -62,6 +64,7 @@ class MascotState(mascotEventType: MascotEventType, serverState: ServerState) {
                 }
 
                 is Event.CloseFile -> TODO()
+                else -> {}
             }
 
         }
@@ -80,6 +83,7 @@ class MascotState(mascotEventType: MascotEventType, serverState: ServerState) {
         delay(delayMillis)
         serif.compareAndSet(string, null)
     }
+
 
 
     private var previousEventType by mutableStateOf<MascotEventType>(MascotEventType.None)
@@ -106,9 +110,9 @@ fun rememberMascotState(
     remember { MascotState(initialMascotEventType, serverState) }
 
 val texts = arrayOf(
-    "うえあ",
+    "優雅に雑音を聞く生活もいいかもしれないよ",
     "もぅﾏﾁﾞ無理...コンパイルしょ...",
-    "小梅太夫「チャンチャカチャンチャンチャチャンカチャンチャン床に抜け毛が落ちていると思っていたら～～～wwwwww～～…超弦理論でした～～～(11次元宇宙を近くする小梅太夫)あああああﾁｸｼｮｵｵｵｵｵｵｵｵｵｵ超弦理論→～～～",
+    "チャンチャカチャンチャンチャチャンカチャンチャン床に抜け毛が落ちていると思っていたら～～～wwwwww～～…超弦理論でした～～～(11次元宇宙を近くする小梅太夫)あああああﾁｸｼｮｵｵｵｵｵｵｵｵｵｵ超弦理論→～～～",
     "技術的には可能です(ｷﾘｯ)",
     "ﾄﾞﾋｭｩｩｩｩﾝシンフォギアァァァァ!!!ｷｭｷｭｷｭｷｭｲﾝ!ｷｭｷｭｷｭｷｭｲﾝ!ｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｷｭｲﾝ!\n" + "ﾎﾟｫﾛﾎﾟﾎﾟﾎﾟﾎﾟﾍﾟﾍﾟﾍﾟﾍﾟﾋﾟﾋﾟﾋﾟﾋﾟﾋﾟｰﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟﾍﾟｰ♪",
     "も　う　ダ　メ　ぽ",

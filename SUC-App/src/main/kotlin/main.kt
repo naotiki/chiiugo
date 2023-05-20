@@ -23,6 +23,7 @@ import org.jetbrains.compose.animatedimage.loadResourceAnimatedImage
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.loadOrNull
 import org.jetbrains.compose.resources.painterResource
+import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -55,7 +56,7 @@ fun main() = application {
     val mascotEventType by mascotState.flow.collectAsState()
     //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
     var gifName by remember(mascotEventType) { mutableStateOf("SUC.gif") }
-    val color = remember { androidx.compose.animation.Animatable(Color.White/*初期の色*/) }
+    val color = remember(mascotEventType) { androidx.compose.animation.Animatable(Color.White/*初期の色*/) }
     val colorState by color.asState()
     val charMap = remember { mutableStateListOf<Pair<Char, Pair<Int, Animatable<Float, AnimationVector1D>>>>() }
     LaunchedEffect(Unit) {
@@ -73,6 +74,15 @@ fun main() = application {
             }
         }
         while (true) {
+            delay(Random.nextLong(5000, 7000))
+            val stt = (0 .. 2).random()
+            if (stt == 0){
+                mascotState.change(MascotEventType.flyingSUC)
+            }else if(stt == 1){
+                mascotState.change(MascotEventType.Gaming)
+            }else{
+                mascotState.change(MascotEventType.Run)//苔の侵食
+            }
             mascotState.speak(texts.random(), 5000)
         }
     }
@@ -84,15 +94,45 @@ fun main() = application {
                 mascotState.speak("ビルド失敗！！！", 5000, true)
             }//コンパイルエラー
             MascotEventType.Fall -> TODO()//ランダム
-            MascotEventType.Gaming -> {
+            MascotEventType.Gaming -> {//ゲーミング〇〇〇華道部
                 gifName = "upleft.gif"
-                while (true) {
+                val aho = launch { while(true) {
                     var random = Color(colorList.random())
                     while (colorState == random) {
                         random = Color(colorList.random())
                     }
                     color.animateTo(random, tween(160, easing = EaseInBack))
+                } }
+                val x =
+                    ScreenSize.widthDp.value * configState.areaOffset.first + (Random.nextFloat() * ScreenSize.widthDp.value * configState.areaSize.first)
+                val y =
+                    ScreenSize.heightDp.value * configState.areaOffset.second + (Random.nextFloat() * ScreenSize.heightDp.value * configState.areaSize.second)
+
+                gifName = if (x > windowState.position.x.value) {
+                    if (y >= windowState.position.y.value) {
+                        "downright.gif"
+                    } else {
+                        "upright.gif"
+                    }
+                } else {
+                    if (y > windowState.position.y.value) {
+                        "downleft.gif"
+                    } else {
+                        "upleft.gif"
+                    }
                 }
+                animatedWindowPosition.animateTo(
+                    animatedWindowPosition.value.copy(
+                        x.dp,
+                        y.dp
+                    ),
+                    tween(
+                        5000, easing = EaseInOut
+                    )
+                )
+                aho.cancel()
+                color.snapTo(Color.White)
+                mascotState.change(MascotEventType.Run)
             }
 
             MascotEventType.None -> {
@@ -144,6 +184,12 @@ fun main() = application {
                 mascotState.recoverEvent()
             }*/
 
+            MascotEventType.flyingSUC -> {
+                gifName = "flyingSUC.gif"
+                delay(3200)
+                mascotState.change(MascotEventType.Run)
+            }
+
             MascotEventType.DVD -> {
                 /* val x = windowState.position.x.value
                  val y = windowState.position.y.value
@@ -172,12 +218,11 @@ fun main() = application {
 
                  }*/
             }
-
             MascotEventType.Chat -> TODO()
             is MascotEventType.Speak -> TODO()
         }
         //Noneに戻す
-        mascotState.change(MascotEventType.None)
+        //mascotState.change(MascotEventType.None)
     }
     //Windowを表示
     Window(
