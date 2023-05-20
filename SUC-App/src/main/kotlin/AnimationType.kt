@@ -9,8 +9,8 @@ enum class AnimationType(val action: suspend WindowAnimatable.() -> Unit) {
     Test({
 
         while(true) {
-            x = (Random.nextFloat() * ScreenSize.widthDp).toInt()
-            y = (Random.nextFloat() * ScreenSize.heightDp).toInt()
+            x = (Random.nextFloat() * ScreenSize.widthDp.value).toInt()
+            y = (Random.nextFloat() * ScreenSize.heightDp.value).toInt()
             animateTo(
                 this.value.copy(
                     x.dp,

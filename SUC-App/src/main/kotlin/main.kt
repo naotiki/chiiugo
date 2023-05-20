@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalDensity
@@ -15,28 +17,29 @@ import androidx.compose.ui.window.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.animatedimage.AnimatedImage
 import org.jetbrains.compose.animatedimage.Blank
 import org.jetbrains.compose.animatedimage.animate
 import org.jetbrains.compose.animatedimage.loadResourceAnimatedImage
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.loadOrNull
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.skia.Codec
-import org.jetbrains.skia.Data
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
 
-val colorList = listOf<Long>(0xFFFFFF00, 0xFF00FF00, 0xFFFF0000, 0xFF0000FF, 0xFF7DEBEB, 0xFFFF9B00,0xFF800080,0xFFFF1493)
+val colorList =
+    listOf<Long>(0xFFFFFF00, 0xFF00FF00, 0xFFFF0000, 0xFF0000FF, 0xFF7DEBEB, 0xFFFF9B00, 0xFF800080, 0xFFFF1493)
+
 @OptIn(ExperimentalResourceApi::class)
 fun main() = application {
     //1dp あたりのpx数を取得 remember いらない
     ScreenSize.density = LocalDensity.current.density
     //Windowサイズや位置の情報が入っている
+
+    val configState by ConfigManager.configState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val winX = remember { Random.nextFloat() * ScreenSize.widthDp }
-    val winY = remember { Random.nextFloat() * ScreenSize.heightDp }
+    val winX = remember { Random.nextFloat() * ScreenSize.widthDp.value }
+    val winY = remember { Random.nextFloat() * ScreenSize.heightDp.value }
     val windowState = rememberWindowState(size = DpSize.Unspecified, position = WindowPosition(winX.dp, winY.dp))
     //アニメーション用の位置
     val animatedWindowPosition =
@@ -48,43 +51,42 @@ fun main() = application {
     }
     val serverState = rememberServerState()
     //SUCの状態
-    val mascotState = rememberMascotState(MascotEventType.Run,serverState)
+    val mascotState = rememberMascotState(MascotEventType.Run, serverState)
     val mascotEventType by mascotState.flow.collectAsState()
     //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
     var gifName by remember(mascotEventType) { mutableStateOf("SUC.gif") }
     val color = remember { androidx.compose.animation.Animatable(Color.White/*初期の色*/) }
     val colorState by color.asState()
-    val charMap = remember { mutableStateListOf< Pair<Char,Pair<Int, Animatable<Float, AnimationVector1D>>>>() }
-    LaunchedEffect(Unit){
-        launch{ serverState.initServer() }
+    val charMap = remember { mutableStateListOf<Pair<Char, Pair<Int, Animatable<Float, AnimationVector1D>>>>() }
+    LaunchedEffect(Unit) {
+        launch { serverState.initServer() }
         launch {//タイピング連動機能
             mascotState.charFlow.collectLatest {
                 val anim = Animatable(0f)
-                val e=it to ( Random.nextInt(imageSizeDp.value.roundToInt()) to anim)
+                val e = it to (Random.nextInt(imageSizeDp.value.roundToInt()) to anim)
                 charMap.add(e)
                 coroutineScope.launch {
-                    anim.animateTo(imageSizeDp.value-10, tween(2000, easing = EaseOutBounce))
-                    delay(Random.nextLong(500,2000))
+                    anim.animateTo(imageSizeDp.value - 10, tween(2000, easing = EaseOutBounce))
+                    delay(Random.nextLong(500, 2000))
                     charMap.remove(e)
                 }
             }
         }
-        while (true){
-            mascotState.speak(texts.random(),5000)
+        while (true) {
+            mascotState.speak(texts.random(), 5000)
         }
     }
-
     //val charList= remember() { mutableStateListOf<Char>() }
     LaunchedEffect(mascotEventType) {
         when (val eventType = mascotEventType) {
             MascotEventType.Explosion -> {
-                gifName="boom.gif"
-                mascotState.speak("ビルド失敗！！！",5000,true)
+                gifName = "boom.gif"
+                mascotState.speak("ビルド失敗！！！", 5000, true)
             }//コンパイルエラー
             MascotEventType.Fall -> TODO()//ランダム
             MascotEventType.Gaming -> {
-                gifName="upleft.gif"
-                while(true){
+                gifName = "upleft.gif"
+                while (true) {
                     var random = Color(colorList.random())
                     while (colorState == random) {
                         random = Color(colorList.random())
@@ -92,6 +94,7 @@ fun main() = application {
                     color.animateTo(random, tween(160, easing = EaseInBack))
                 }
             }
+
             MascotEventType.None -> {
                 gifName = "SUC.gif"
             }
@@ -100,8 +103,10 @@ fun main() = application {
                 //TODO アニメーション書いてちょ
 
                 while (true) {
-                    val x = (Random.nextFloat() * ScreenSize.widthDp * 0.8)
-                    val y = (Random.nextFloat() * ScreenSize.heightDp * 0.8)
+                    val x =
+                        ScreenSize.widthDp.value * configState.areaOffset.first + (Random.nextFloat() * ScreenSize.widthDp.value * configState.areaSize.first)
+                    val y =
+                        ScreenSize.heightDp.value * configState.areaOffset.second + (Random.nextFloat() * ScreenSize.heightDp.value * configState.areaSize.second)
 
                     gifName = if (x > windowState.position.x.value) {
                         if (y >= windowState.position.y.value) {
@@ -181,24 +186,25 @@ fun main() = application {
         resizable = false,
         transparent = true,
         undecorated = true,
-        alwaysOnTop = false//TODO デバッグ用に切った 本番時 true
+        alwaysOnTop = configState.alwaysTop//TODO デバッグ用に切った 本番時 true
     ) {
 
         Box(modifier = Modifier) {
             //SUCちゃん
-            Image(loadOrNull(gifName) {
-                loadResourceAnimatedImage(gifName)
-            }?.animate() ?: ImageBitmap.Blank,
+            Image(
+                loadOrNull(gifName) {
+                    loadResourceAnimatedImage(gifName)
+                }?.animate() ?: ImageBitmap.Blank,
                 null,
-                Modifier.size(imageSizeDp),colorFilter = ColorFilter.tint(colorState, BlendMode.Modulate),
+                Modifier.size(imageSizeDp), colorFilter = ColorFilter.tint(colorState, BlendMode.Modulate),
             )
             val serif by mascotState.serifFlow.collectAsState()
-            if (serif!=null) {
+            if (serif != null) {
                 Box(
                     modifier = Modifier.padding(start = 150.dp, top = 50.dp).width(150.dp)
                 ) {
                     Text(
-                        serif?:"", modifier = Modifier
+                        serif ?: "", modifier = Modifier
                             .background(
                                 color = Color(0xff5ff4ac),
                                 shape = RoundedCornerShape(30)
@@ -206,24 +212,52 @@ fun main() = application {
                             .padding(10.dp)
                     )
                 }
-            }else Spacer(Modifier.width(300.dp))
+            } else Spacer(Modifier.width(300.dp))
             charMap.forEach { (c, a) ->
                 val anim by a.second.asState()
-                Text(c.toString(), Modifier.offset(x = a.first.dp, y = anim.dp),color=Color.Red)
+                Text(c.toString(), Modifier.offset(x = a.first.dp, y = anim.dp), color = Color.Red)
             }
         }
     }
 
-    var statisticsWindow by remember { mutableStateOf(true) }
+    var controlWindowTab by remember { mutableStateOf<Int?>(0) }
+    var exitCount by remember { mutableStateOf(0) }
     Tray(painterResource("SUC.png")) {
+        Item("設定") {
+            controlWindowTab = 1
+        }
         Item("統計") {
-            statisticsWindow = true
+            controlWindowTab = 0
         }
         Item("閉じる") {
-            exitApplication()
+            exitCount = 5
         }
     }
-    ControlWindow(statisticsWindow,serverState) { statisticsWindow = false }
+        val dialogState= rememberDialogState()
+        Dialog({ exitCount=0 },dialogState, visible = exitCount!=0, title = "確認"){
+            Box(Modifier.fillMaxSize().padding(15.dp,5.dp)) {
+                Column {
+                    Text("本当に閉じますか？")
+                    Text("(あと $exitCount 回)")
+                }
+                Row(Modifier.align(Alignment.BottomEnd), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Button({exitCount=0}){
+                        Text("No")
+                    }
+                    Button({
+                        if (exitCount--<=0){
+                            exitApplication()
+                        }else{
+                            dialogState.position= WindowPosition(BiasAlignment(Random.nextInt(-1,1).toFloat(),Random.nextInt(-1,1).toFloat()))
+                        }
+                    }){
+                        Text("Yes")
+                    }
+                }
+            }
+        }
+
+    ControlWindow(controlWindowTab != null, serverState, { controlWindowTab = null }, controlWindowTab ?: 0)
 }
 
 val imageSizeDp: Dp = 175.dp

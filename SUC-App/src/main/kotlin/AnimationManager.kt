@@ -16,13 +16,4 @@ object AnimationManager {
     }
 }
 
-object ScreenSize{
-    var density:Float=1f
 
-    val screenSizePx = Toolkit.getDefaultToolkit().screenSize
-    val widthDp get() = screenSizePx.width.toDp()
-    val heightDp get() = screenSizePx.height.toDp()
-    fun Float.coerceInWidth()=coerceIn(0f, widthDp)
-    fun Float.coerceInHeight()=coerceIn(0f, heightDp)
-    fun Int.toDp() = div(density)
-}
