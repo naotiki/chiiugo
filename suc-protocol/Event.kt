@@ -8,6 +8,7 @@ import java.nio.ByteBuffer
 sealed interface Event {
     @Serializable
     data class OpenProject(val projectName:String):Event
+
     @Serializable
     data class StartBuild(val buildId:String) : Event
     @Serializable

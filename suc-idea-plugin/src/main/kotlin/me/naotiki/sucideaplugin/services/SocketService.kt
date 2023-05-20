@@ -3,14 +3,12 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import com.intellij.refactoring.rename.RenameUsagesCollector.Companion.started
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import java.io.DataInputStream
 import java.io.IOException
-import java.net.ConnectException
 import java.net.Socket
 import java.net.UnknownHostException
 
@@ -64,8 +62,10 @@ class SocketService : Disposable {
         notificationGroup.createNotification("[Debug] Send: $serverProtocol", NotificationType.INFORMATION)
             .notify(project)
         coroutineScope.launch {
-            outputStream.write(serverProtocol.convertByteArray())
-            outputStream.flush()
+            withContext(Dispatchers.IO) {
+                outputStream.write(serverProtocol.convertByteArray())
+                outputStream.flush()
+            }
         }
     }
 

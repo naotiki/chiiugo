@@ -1,9 +1,6 @@
 
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
@@ -27,10 +24,11 @@ class Server(val port: Int=PORT) {
 
     }
 
-    private val callbacks= mutableListOf<(ServerProtocol.SendEvent)->Unit>()
-    fun onEventReceive( block:(ServerProtocol.SendEvent)->Unit){
+    private val callbacks= mutableListOf<suspend (ServerProtocol.SendEvent)->Unit>()
+    fun onEventReceive( block:suspend (ServerProtocol.SendEvent)->Unit){
         callbacks.add(block)
     }
+    val coroutineScope= CoroutineScope(Dispatchers.Default)
     inner class ServerThread(private val socket: Socket) : Thread() {
         @OptIn(ExperimentalSerializationApi::class)
         override fun run() {
@@ -43,7 +41,7 @@ class Server(val port: Int=PORT) {
                     print("Size=$size:")
                     val data=Cbor.decodeFromByteArray<ServerProtocol>(sin.readNBytes(size))
                     if (data is ServerProtocol.SendEvent){
-                        callbacks.forEach { it(data) }
+                        callbacks.forEach { coroutineScope.launch { it(data) } }
                     }
                     println(data)
                 }

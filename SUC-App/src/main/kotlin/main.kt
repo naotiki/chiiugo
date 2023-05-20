@@ -11,28 +11,21 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.animatedimage.AnimatedImage
 import org.jetbrains.compose.animatedimage.Blank
 import org.jetbrains.compose.animatedimage.animate
 import org.jetbrains.compose.animatedimage.loadResourceAnimatedImage
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.loadOrNull
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.kotlinx.kandy.dsl.continuous
-import org.jetbrains.kotlinx.kandy.dsl.invoke
-import org.jetbrains.kotlinx.kandy.dsl.plot
-import org.jetbrains.kotlinx.kandy.letsplot.export.toBufferedImage
-import org.jetbrains.kotlinx.kandy.letsplot.layers.bars
-import org.jetbrains.kotlinx.kandy.letsplot.layout
-import org.jetbrains.kotlinx.kandy.letsplot.x
-import org.jetbrains.kotlinx.kandy.letsplot.y
+import org.jetbrains.skia.Codec
+import org.jetbrains.skia.Data
 import kotlin.math.roundToInt
 import kotlin.random.Random
-import org.jetbrains.kotlinx.kandy.util.color.Color.Companion as KandyColor
 
 
 val colorList = listOf<Long>(0xFFFFFF00, 0xFF00FF00, 0xFFFF0000, 0xFF0000FF, 0xFF7DEBEB, 0xFFFF9B00,0xFF800080,0xFFFF1493)
@@ -53,9 +46,9 @@ fun main() = application {
     LaunchedEffect(statePos) {
         windowState.position = statePos
     }
-
+    val serverState = rememberServerState()
     //SUCの状態
-    val mascotState = rememberMascotState(MascotEventType.Run)
+    val mascotState = rememberMascotState(MascotEventType.Run,serverState)
     val mascotEventType by mascotState.flow.collectAsState()
     //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
     var gifName by remember(mascotEventType) { mutableStateOf("SUC.gif") }
@@ -63,7 +56,7 @@ fun main() = application {
     val colorState by color.asState()
     val charMap = remember { mutableStateListOf< Pair<Char,Pair<Int, Animatable<Float, AnimationVector1D>>>>() }
     LaunchedEffect(Unit){
-        launch{ mascotState.initServer() }
+        launch{ serverState.initServer() }
         launch {//タイピング連動機能
             mascotState.charFlow.collectLatest {
                 val anim = Animatable(0f)
@@ -84,7 +77,10 @@ fun main() = application {
     //val charList= remember() { mutableStateListOf<Char>() }
     LaunchedEffect(mascotEventType) {
         when (val eventType = mascotEventType) {
-            MascotEventType.Explosion -> TODO()//コンパイルエラー
+            MascotEventType.Explosion -> {
+                gifName="boom.gif"
+                mascotState.speak("ビルド失敗！！！",5000,true)
+            }//コンパイルエラー
             MascotEventType.Fall -> TODO()//ランダム
             MascotEventType.Gaming -> {
                 gifName="upleft.gif"
@@ -97,7 +93,7 @@ fun main() = application {
                 }
             }
             MascotEventType.None -> {
-                gifName = "SUC.webp"
+                gifName = "SUC.gif"
             }
 
             MascotEventType.Run -> {
@@ -192,8 +188,7 @@ fun main() = application {
             //SUCちゃん
             Image(loadOrNull(gifName) {
                 loadResourceAnimatedImage(gifName)
-            }
-                ?.animate() ?: ImageBitmap.Blank,
+            }?.animate() ?: ImageBitmap.Blank,
                 null,
                 Modifier.size(imageSizeDp),colorFilter = ColorFilter.tint(colorState, BlendMode.Modulate),
             )
@@ -228,7 +223,7 @@ fun main() = application {
             exitApplication()
         }
     }
-    ControlWindow(statisticsWindow) { statisticsWindow = false }
+    ControlWindow(statisticsWindow,serverState) { statisticsWindow = false }
 }
 
 val imageSizeDp: Dp = 175.dp

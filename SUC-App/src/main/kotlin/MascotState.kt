@@ -1,11 +1,8 @@
 import androidx.compose.runtime.*
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.yield
-import kotlinx.datetime.Clock
-import kotlinx.datetime.DateTimePeriod
-import kotlinx.datetime.DateTimeUnit
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 sealed interface MascotEventType {
     //なにもないよ
@@ -27,52 +24,61 @@ sealed interface MascotEventType {
 
 }
 
+class ServerState() {
+    val server = Server()
+    suspend fun initServer() {
+        server.runServer()
+    }
+}
 
-class MascotState(mascotEventType: MascotEventType) {
+@Composable
+fun rememberServerState() = remember { ServerState() }
+
+class MascotState(mascotEventType: MascotEventType, serverState: ServerState) {
     private val stateFlow = MutableStateFlow(mascotEventType)
     val flow get() = stateFlow.asStateFlow()
-    private val server = Server()
-    val startTime= Clock.System.now()
-    suspend fun initServer() {
-        server.onEventReceive {
-            runBlocking {
-                when (val e = it.event) {
-                    is Event.FailedBuild -> TODO()
-                    is Event.OpenProject -> {
-                        speak(e.projectName + "を開きました！", 10000, true)
-                        //change(Speak(e.projectName))
-                    }
 
-                    is Event.StartBuild -> TODO()
-                    is Event.SuccessBuild -> TODO()
-                    is Event.Typed -> {
-                        feed(e.char)
-                    }
-                    is Event.OpenFile->{
-
-                    }
-
-                    is Event.CloseFile -> TODO()
+    init {
+        serverState.server.onEventReceive {
+            when (val e = it.event) {
+                is Event.FailedBuild -> {
+                    change(MascotEventType.Explosion)
                 }
+                is Event.OpenProject -> {
+                    speak(e.projectName + "を開きました！", 5000, true)
+                    //change(Speak(e.projectName))
+                }
+
+                is Event.StartBuild -> {
+                    speak(e.buildId + "を実行中", 5000, true)
+                }
+                is Event.SuccessBuild -> {}
+                is Event.Typed -> {
+                    feed(e.char)
+                }
+
+                is Event.OpenFile -> {
+
+                }
+
+                is Event.CloseFile -> TODO()
             }
 
         }
-        server.runServer()
-
     }
 
     //nullで吹き出し非表示
     private val serif = MutableStateFlow<String?>(null)
     val serifFlow = serif.asStateFlow()
     suspend fun speak(string: String, delayMillis: Long, important: Boolean = false) {
-        println("Say $important ${serif.value}→ $string")
+        //println("Say $important ${serif.value}→ $string")
         if (important) {
             serif.emit(string)
         } else if (serif.value == null) {
             serif.emit(string)
         } else return delay(1000)//yield()でもOK return のみだとUI Threadがブロックされる
         delay(delayMillis)
-        serif.compareAndSet(string,null)
+        serif.compareAndSet(string, null)
     }
 
 
@@ -87,7 +93,7 @@ class MascotState(mascotEventType: MascotEventType) {
     }
 
 
-    val charFlow= MutableSharedFlow<Char>()
+    val charFlow = MutableSharedFlow<Char>()
     suspend fun feed(char: Char) {
         charFlow.emit(char)
     }
@@ -95,9 +101,9 @@ class MascotState(mascotEventType: MascotEventType) {
 
 @Composable
 fun rememberMascotState(
-    initialMascotEventType: MascotEventType = MascotEventType.None
+    initialMascotEventType: MascotEventType = MascotEventType.None, serverState: ServerState
 ) =
-    remember { MascotState(initialMascotEventType) }
+    remember { MascotState(initialMascotEventType, serverState) }
 
 val texts = arrayOf(
     "カップルでディズニーに行くとすぐ別れるっていうよね。",

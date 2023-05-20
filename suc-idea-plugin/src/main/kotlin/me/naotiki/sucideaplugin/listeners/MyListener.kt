@@ -18,7 +18,7 @@ import com.intellij.util.application
 
 
 class MyListener(val project: Project) : ExecutionListener {
-    val socketService = project.getService(SocketService::class.java)
+    val socketService = application.getService(SocketService::class.java)
 
     //ビルド開始
     override fun processStartScheduled(executorId: String, env: ExecutionEnvironment) {
