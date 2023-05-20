@@ -75,11 +75,13 @@ fun main() = application {
         }
         while (true) {
             delay(Random.nextLong(5000, 7000))
-            val stt = (0 .. 2).random()
+            val stt = (0 .. 30).random()
             if (stt == 0){
-                mascotState.change(MascotEventType.flyingSUC)
-            }else if(stt == 1){
+                mascotState.change(MascotEventType.Fall)
+            }else if(stt in 1..7){
                 mascotState.change(MascotEventType.Gaming)
+            }else if(stt in 8..15){
+                mascotState.change(MascotEventType.flyingSUC)
             }else{
                 mascotState.change(MascotEventType.Run)//苔の侵食
             }
@@ -93,7 +95,11 @@ fun main() = application {
                 gifName = "boom.gif"
                 mascotState.speak("ビルド失敗！！！", 5000, true)
             }//コンパイルエラー
-            MascotEventType.Fall -> TODO()//ランダム
+            MascotEventType.Fall -> {
+                gifName = "fallSUC.gif"
+                delay(950)
+                mascotState.change(MascotEventType.Run)
+            }//ランダム
             MascotEventType.Gaming -> {//ゲーミング〇〇〇華道部
                 gifName = "upleft.gif"
                 val aho = launch { while(true) {
@@ -189,6 +195,7 @@ fun main() = application {
                 delay(3200)
                 mascotState.change(MascotEventType.Run)
             }
+
 
             MascotEventType.DVD -> {
                 /* val x = windowState.position.x.value
