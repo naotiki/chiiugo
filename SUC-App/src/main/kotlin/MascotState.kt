@@ -106,7 +106,7 @@ fun rememberMascotState(
     remember { MascotState(initialMascotEventType, serverState) }
 
 val texts = arrayOf(
-    "カップルでディズニーに行くとすぐ別れるっていうよね。",
+    "うえあ",
     "もぅﾏﾁﾞ無理...コンパイルしょ...",
     "小梅太夫「チャンチャカチャンチャンチャチャンカチャンチャン床に抜け毛が落ちていると思っていたら～～～wwwwww～～…超弦理論でした～～～(11次元宇宙を近くする小梅太夫)あああああﾁｸｼｮｵｵｵｵｵｵｵｵｵｵ超弦理論→～～～",
     "技術的には可能です(ｷﾘｯ)",
