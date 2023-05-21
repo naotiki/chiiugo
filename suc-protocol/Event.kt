@@ -8,7 +8,8 @@ import java.nio.ByteBuffer
 sealed interface Event {
     @Serializable
     data class OpenProject(val projectName:String):Event
-
+    @Serializable
+    object CloseProject: Event
     @Serializable
     data class StartBuild(val buildId:String) : Event
     @Serializable
@@ -31,10 +32,6 @@ sealed interface ServerProtocol {
     object Hello: ServerProtocol
     @Serializable
     data class SendEvent(val event:Event): ServerProtocol
-    @Serializable
-    object GetCodingTime: ServerProtocol
-    @Serializable
-    data class CodingTime(val time:Long):ServerProtocol
     @Serializable
     object End: ServerProtocol
     @Serializable

@@ -41,8 +41,8 @@ class MascotState(mascotEventType: MascotEventType, serverState: ServerState) {
     val flow get() = stateFlow.asStateFlow()
 
     init {
-        serverState.server.onEventReceive {
-            when (val e = it.event) {
+        serverState.server.onEventReceive {e,_->
+            when (e) {
                 is Event.FailedBuild -> {
                     change(MascotEventType.Explosion)
                 }

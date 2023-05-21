@@ -7,13 +7,17 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.window.*
+import data.DatabaseFactory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -31,17 +35,31 @@ import kotlin.random.Random
 val colorList =
     listOf<Long>(0xFFFFFF00, 0xFF00FF00, 0xFFFF0000, 0xFF0000FF, 0xFF7DEBEB, 0xFFFF9B00, 0xFF800080, 0xFFFF1493)
 
-@OptIn(ExperimentalResourceApi::class)
+@OptIn(ExperimentalResourceApi::class, ExperimentalComposeUiApi::class)
 fun main() = application {
+    LaunchedEffect(Unit){
+        DatabaseFactory.init()
+    }
     //1dp あたりのpx数を取得 remember いらない
-    ScreenSize.density = LocalDensity.current.density
+    val screenSize=rememberScreenSize()
+    //ScreenSize.density = LocalDensity.current.density
     //Windowサイズや位置の情報が入っている
 
     val configState by ConfigManager.configState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val winX = remember { Random.nextFloat() * ScreenSize.widthDp.value }
-    val winY = remember { Random.nextFloat() * ScreenSize.heightDp.value }
+    val winX = remember { Random.nextFloat() * screenSize.widthDp.value }
+    val winY = remember { Random.nextFloat() * screenSize.heightDp.value }
     val windowState = rememberWindowState(size = DpSize.Unspecified, position = WindowPosition(winX.dp, winY.dp))
+    val size= remember(windowState.size.isSpecified) { windowState.size }
+    LaunchedEffect(windowState.size){
+        if (windowState.size!=size)
+            windowState.size= DpSize.Unspecified
+    }
+    LaunchedEffect(LocalDensity.current){
+        println(screenSize.widthDp)
+        println(screenSize.density)
+        println(screenSize.screenSizePx.width/screenSize.density)
+    }
     //アニメーション用の位置
     val animatedWindowPosition =
         remember { Animatable(windowState.position as WindowPosition.Absolute, WindowPositionToVector) }
@@ -59,6 +77,7 @@ fun main() = application {
     val color = remember(mascotEventType) { androidx.compose.animation.Animatable(Color.White/*初期の色*/) }
     val colorState by color.asState()
     val charMap = remember { mutableStateListOf<Pair<Char, Pair<Int, Animatable<Float, AnimationVector1D>>>>() }
+    var lockEvent by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         launch { serverState.initServer() }
         launch {//タイピング連動機能
@@ -73,27 +92,16 @@ fun main() = application {
                 }
             }
         }
-        while (true) {
-            delay(Random.nextLong(5000, 7000))
-            val stt = (0 .. 30).random()
-            if (stt == 0){
-                mascotState.change(MascotEventType.Fall)
-            }else if(stt in 1..7){
-                mascotState.change(MascotEventType.Gaming)
-            }else if(stt in 8..15){
-                mascotState.change(MascotEventType.flyingSUC)
-            }else{
-                mascotState.change(MascotEventType.Run)//苔の侵食
-            }
-            mascotState.speak(texts.random(), 5000)
-        }
+
     }
     //val charList= remember() { mutableStateListOf<Char>() }
     LaunchedEffect(mascotEventType) {
         when (val eventType = mascotEventType) {
             MascotEventType.Explosion -> {
                 gifName = "boom.gif"
+
                 mascotState.speak("ビルド失敗！！！", 5000, true)
+
             }//コンパイルエラー
             MascotEventType.Fall -> {
                 gifName = "fallSUC.gif"
@@ -110,9 +118,9 @@ fun main() = application {
                     color.animateTo(random, tween(160, easing = EaseInBack))
                 } }
                 val x =
-                    ScreenSize.widthDp.value * configState.areaOffset.first + (Random.nextFloat() * ScreenSize.widthDp.value * configState.areaSize.first)
+                    screenSize.widthDp.value * configState.areaOffset.first + (Random.nextFloat() * screenSize.widthDp.value * configState.areaSize.first)
                 val y =
-                    ScreenSize.heightDp.value * configState.areaOffset.second + (Random.nextFloat() * ScreenSize.heightDp.value * configState.areaSize.second)
+                    screenSize.heightDp.value * configState.areaOffset.second + (Random.nextFloat() * screenSize.heightDp.value * configState.areaSize.second)
 
                 gifName = if (x > windowState.position.x.value) {
                     if (y >= windowState.position.y.value) {
@@ -138,21 +146,33 @@ fun main() = application {
                 )
                 aho.cancel()
                 color.snapTo(Color.White)
-                mascotState.change(MascotEventType.Run)
             }
 
             MascotEventType.None -> {
-                gifName = "SUC.gif"
+
             }
 
             MascotEventType.Run -> {
                 //TODO アニメーション書いてちょ
-
-                while (true) {
+                val a=launch{
+                    delay(Random.nextLong(5000, 7000))
+                    val stt = (0..30).random()
+                    println(stt)
+                    if (stt == 0) {
+                        mascotState.change(MascotEventType.Fall)
+                    } else if (stt in 1..7) {
+                        mascotState.change(MascotEventType.Gaming)
+                    } else if (stt in 8..15) {
+                        mascotState.change(MascotEventType.flyingSUC)
+                    } else {
+                        mascotState.change(MascotEventType.None)//苔の侵食
+                    }
+                    mascotState.speak(texts.random(), 5000)
+                }
                     val x =
-                        ScreenSize.widthDp.value * configState.areaOffset.first + (Random.nextFloat() * ScreenSize.widthDp.value * configState.areaSize.first)
+                        screenSize.widthDp.value*1.5f * configState.areaOffset.first + (Random.nextFloat() * screenSize.widthDp.value * configState.areaSize.first)
                     val y =
-                        ScreenSize.heightDp.value * configState.areaOffset.second + (Random.nextFloat() * ScreenSize.heightDp.value * configState.areaSize.second)
+                        screenSize.heightDp.value*1.5f * configState.areaOffset.second + (Random.nextFloat() * screenSize.heightDp.value * configState.areaSize.second)
 
                     gifName = if (x > windowState.position.x.value) {
                         if (y >= windowState.position.y.value) {
@@ -176,7 +196,7 @@ fun main() = application {
                             5000, easing = EaseInOut
                         )
                     )
-                }
+                        a.join()
             }
             /*MascotEventType.Chat->{
                 while (true){
@@ -193,7 +213,6 @@ fun main() = application {
             MascotEventType.flyingSUC -> {
                 gifName = "flyingSUC.gif"
                 delay(3200)
-                mascotState.change(MascotEventType.Run)
             }
 
 
@@ -229,7 +248,7 @@ fun main() = application {
             is MascotEventType.Speak -> TODO()
         }
         //Noneに戻す
-        //mascotState.change(MascotEventType.None)
+        mascotState.change(MascotEventType.Run)
     }
     //Windowを表示
     Window(
@@ -274,7 +293,7 @@ fun main() = application {
 
     var controlWindowTab by remember { mutableStateOf<Int?>(0) }
     var exitCount by remember { mutableStateOf(0) }
-    Tray(painterResource("SUC.png")) {
+    Tray(painterResource("SUCIcon.png")) {
         Item("設定") {
             controlWindowTab = 1
         }
@@ -286,25 +305,48 @@ fun main() = application {
         }
     }
         val dialogState= rememberDialogState()
-        Dialog({ exitCount=0 },dialogState, visible = exitCount!=0, title = "確認"){
+        Dialog({ exitCount=0 },dialogState, visible = exitCount!=0, title = "確認", onKeyEvent = {
+            if (it.isCtrlPressed&&it.isAltPressed&&it.isShiftPressed&&it.key== Key.Q){
+                exitApplication()
+            }
+            false
+        }){
             Box(Modifier.fillMaxSize().padding(15.dp,5.dp)) {
                 Column {
                     Text("本当に閉じますか？")
                     Text("(あと $exitCount 回)")
                 }
                 Row(Modifier.align(Alignment.BottomEnd), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                    Button({exitCount=0}){
-                        Text("No")
-                    }
-                    Button({
-                        if (exitCount--<=0){
-                            exitApplication()
-                        }else{
-                            dialogState.position= WindowPosition(BiasAlignment(Random.nextInt(-1,1).toFloat(),Random.nextInt(-1,1).toFloat()))
+                    if (exitCount==1){
+
+                        Button({
+                            if (--exitCount<=0){
+                                exitApplication()
+                            }else{
+                                dialogState.position= WindowPosition(BiasAlignment(Random.nextInt(-1,1).toFloat(),Random.nextInt(-1,1).toFloat()))
+                            }
+                        }){
+                            Text("Yes")
                         }
-                    }){
-                        Text("Yes")
+                        Button({exitCount=0}){
+                            Text("No")
+                        }
+                    }else{
+
+                        Button({exitCount=0}){
+                            Text("No")
+                        }
+                        Button({
+                            if (--exitCount<=0){
+                                exitApplication()
+                            }else{
+                                dialogState.position= WindowPosition(BiasAlignment(Random.nextInt(-1,1).toFloat(),Random.nextInt(-1,1).toFloat()))
+                            }
+                        }){
+                            Text("Yes")
+                        }
                     }
+
                 }
             }
         }

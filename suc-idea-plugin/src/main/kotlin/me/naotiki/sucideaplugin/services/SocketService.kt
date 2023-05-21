@@ -1,3 +1,5 @@
+import Event.OpenProject
+import ServerProtocol.SendEvent
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
@@ -33,7 +35,9 @@ class SocketService : Disposable {
                         val dataLength = dataInputStream.readInt()
                         val byteData = dataInputStream.readNBytes(dataLength)
                         when (Cbor.decodeFromByteArray<ServerProtocol>(byteData)) {
-                            ServerProtocol.End -> TODO()
+                            ServerProtocol.End -> {
+                                closeServer()
+                            }
                             ServerProtocol.Error -> TODO()
                             ServerProtocol.Hello -> TODO()
                             else -> {
@@ -46,7 +50,7 @@ class SocketService : Disposable {
                     }
                 }
             }
-            sendData(ServerProtocol.Hello)
+            sendData(ServerProtocol.Hello, null)
         }.fold({
             true
         }, {
@@ -58,10 +62,13 @@ class SocketService : Disposable {
     }
 
     private val outputStream get() = socket!!.getOutputStream()
-    fun sendData(serverProtocol: ServerProtocol, project: Project? = null) {
+    fun sendData(serverProtocol: ServerProtocol, project: Project? ): Job {
+        if (socket==null){
+            startServer()
+        }
         notificationGroup.createNotification("[Debug] Send: $serverProtocol", NotificationType.INFORMATION)
             .notify(project)
-        coroutineScope.launch {
+        return coroutineScope.launch {
             withContext(Dispatchers.IO) {
                 outputStream.write(serverProtocol.convertByteArray())
                 outputStream.flush()
@@ -69,11 +76,17 @@ class SocketService : Disposable {
         }
     }
 
+
     fun closeServer(){
         println("Close Server")
         coroutineScope.cancel()
         coroutineScope= CoroutineScope(Dispatchers.IO)
+        if (!connecting)return
+        runBlocking {
+            sendData(ServerProtocol.End,null).join()
+        }
         socket?.close()
+        socket=null
     }
 
     override fun dispose() {

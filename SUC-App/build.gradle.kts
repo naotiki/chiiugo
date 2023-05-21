@@ -35,10 +35,11 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.5.0")
 
     implementation("org.jetbrains.kotlinx:kandy-lets-plot:0.4.1")
-    val exposedVersion: String ="0.40.1"
+    val exposedVersion: String ="0.41.1"
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
     implementation("com.h2database:h2:2.1.214")
 }
 
