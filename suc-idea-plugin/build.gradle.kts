@@ -1,3 +1,6 @@
+import java.util.*
+import kotlin.reflect.KProperty
+
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.8.20"
@@ -5,6 +8,8 @@ plugins {
     kotlin("plugin.serialization") version "1.8.10"
 }
 
+val publishProperties=Properties()
+publishProperties.load(file("publish.properties").bufferedReader())
 group = "me.naotiki"
 version = "1.0-SNAPSHOT"
 sourceSets{
@@ -50,12 +55,12 @@ tasks {
     }
 
     signPlugin {
-        certificateChain.set(System.getenv("CERTIFICATE_CHAIN"))
-        privateKey.set(System.getenv("PRIVATE_KEY"))
-        password.set(System.getenv("PRIVATE_KEY_PASSWORD"))
+        certificateChainFile.set(file("certificate/chain.crt"))
+        privateKeyFile.set(file("certificate/private.pem"))
+        password.set(publishProperties.getProperty("password"))
     }
 
     publishPlugin {
-        token.set(System.getenv("PUBLISH_TOKEN"))
+        token.set(publishProperties.getProperty("token"))
     }
 }
