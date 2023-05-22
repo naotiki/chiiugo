@@ -11,7 +11,7 @@ plugins {
 val publishProperties=Properties()
 publishProperties.load(file("publish.properties").bufferedReader())
 group = "me.naotiki"
-version = "1.0-SNAPSHOT"
+version = "1.0-SNAPSHOT2"
 sourceSets{
     kotlin{
         main{
@@ -33,7 +33,7 @@ dependencies{
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2022.3.3")
+    version.set("2022.2.5")
     type.set("IC") // Target IDE Platform
 
     plugins.set(listOf(/* Plugin Dependencies */))
