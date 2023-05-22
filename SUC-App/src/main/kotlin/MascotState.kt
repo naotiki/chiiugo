@@ -54,7 +54,9 @@ class MascotState(mascotEventType: MascotEventType, serverState: ServerState) {
                 is Event.StartBuild -> {
                     speak(e.buildId + "を実行中", 5000, true)
                 }
-                is Event.SuccessBuild -> {}
+                is Event.SuccessBuild -> {
+                    speak( "ビルド成功！", 5000, true)
+                }
                 is Event.Typed -> {
                     feed(e.char)
                 }
