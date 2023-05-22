@@ -3,13 +3,17 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -27,13 +31,11 @@ import org.jetbrains.compose.animatedimage.loadResourceAnimatedImage
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.loadOrNull
 import org.jetbrains.compose.resources.painterResource
-import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
-
 val colorList =
-    listOf<Long>(0xFFFFFF00, 0xFF00FF00, 0xFFFF0000, 0xFF0000FF, 0xFF7DEBEB, 0xFFFF9B00, 0xFF800080, 0xFFFF1493)
+    listOf(0xFFFFFF00, 0xFF00FF00, 0xFFFF0000, 0xFF0000FF, 0xFF7DEBEB, 0xFFFF9B00, 0xFF800080, 0xFFFF1493)
 
 @OptIn(ExperimentalResourceApi::class, ExperimentalComposeUiApi::class)
 fun main() = application {
@@ -77,7 +79,6 @@ fun main() = application {
     val color = remember(mascotEventType) { androidx.compose.animation.Animatable(Color.White/*初期の色*/) }
     val colorState by color.asState()
     val charMap = remember { mutableStateListOf<Pair<Char, Pair<Int, Animatable<Float, AnimationVector1D>>>>() }
-    var lockEvent by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         launch { serverState.initServer() }
         launch {//タイピング連動機能
@@ -96,7 +97,7 @@ fun main() = application {
     }
     //val charList= remember() { mutableStateListOf<Char>() }
     LaunchedEffect(mascotEventType) {
-        when (val eventType = mascotEventType) {
+        when (mascotEventType) {
             MascotEventType.Explosion -> {
                 gifName = "boom.gif"
 
@@ -156,15 +157,19 @@ fun main() = application {
                 //TODO アニメーション書いてちょ
                 val a=launch{
                     delay(Random.nextLong(5000, 7000))
-                    val stt = (0..30).random()
-                    if (stt == 0) {
-                        mascotState.change(MascotEventType.Fall)
-                    } else if (stt in 1..7) {
-                        mascotState.change(MascotEventType.Gaming)
-                    } else if (stt in 8..15) {
-                        mascotState.change(MascotEventType.flyingSUC)
-                    } else {
-                        mascotState.change(MascotEventType.None)//苔の侵食
+                    when ((0 until 30).random()) {
+                        0 -> {
+                            mascotState.change(MascotEventType.Fall)
+                        }
+                        in 1..7 -> {
+                            mascotState.change(MascotEventType.Gaming)
+                        }
+                        in 8..15 -> {
+                            mascotState.change(MascotEventType.flyingSUC)
+                        }
+                        else -> {
+                            mascotState.change(MascotEventType.None)//苔の侵食
+                        }
                     }
                     mascotState.speak(texts.random(), 5000)
                 }
@@ -259,7 +264,7 @@ fun main() = application {
         resizable = false,
         transparent = true,
         undecorated = true,
-        alwaysOnTop = configState.alwaysTop//TODO デバッグ用に切った 本番時 true
+        alwaysOnTop = configState.alwaysTop
     ) {
 
         Box(modifier = Modifier) {
@@ -359,4 +364,5 @@ fun main() = application {
 val imageSizeDp: Dp = 175.dp
 
 
+@Suppress("unused")//DVD機能で使うかも
 fun Random.Default.nextSign() = if (nextBoolean()) 1 else -1
