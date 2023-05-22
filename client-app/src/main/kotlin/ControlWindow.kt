@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Window
 import data.DailyStatistic
 import data.DailyStatistics
-import data.DatabaseFactory
 import data.dbQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,7 +38,6 @@ import org.jetbrains.kotlinx.kandy.letsplot.y
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
 
-val startTime = Clock.System.now()
 const val areaScale = 300
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalResourceApi::class)
@@ -219,9 +217,9 @@ fun ControlWindow(visible: Boolean = true, serverState: ServerState, onCloseRequ
 class StatisticsState(serverState: ServerState) {
     data class ProjectData(val name: String, val openEpoch: Long, val closeEpoch: Long = openEpoch)
 
-    val projectList = mutableStateMapOf<Long, ProjectData>()
-    var originEpoch: Long? = null
-    val statisticsDAO = StatisticsDAO()
+    private val projectList = mutableStateMapOf<Long, ProjectData>()
+    private var originEpoch: Long? = null
+    private val statisticsDAO = StatisticsDAO()
 
     init {
         serverState.server.onEventReceive { event, id ->
@@ -250,7 +248,7 @@ class StatisticsState(serverState: ServerState) {
     var imageBitmap by mutableStateOf(ImageBitmap.Blank)
 
 
-    suspend fun applyUpTime(delta: Long) {
+    private suspend fun applyUpTime(delta: Long) {
         println("Adding $delta ms")
         statisticsDAO.addUptime(delta, today)
     }
@@ -258,10 +256,10 @@ class StatisticsState(serverState: ServerState) {
         totalDatePeriod=getTotalDatePeriod()
         imageBitmap=generateBitmapImage()
     }
-    suspend fun getTotalDatePeriod(): DateTimePeriod {
+    private suspend fun getTotalDatePeriod(): DateTimePeriod {
         return statisticsDAO.getTotalTime().milliseconds.toDateTimePeriod()
     }
-    suspend fun generateBitmapImage(): ImageBitmap {
+    private suspend fun generateBitmapImage(): ImageBitmap {
         return plot(totalTimeUntil()) {
 
             x("日付"<String>()) {
@@ -284,7 +282,7 @@ class StatisticsState(serverState: ServerState) {
         }.toBufferedImage().toComposeImageBitmap()
     }
 
-    suspend fun totalTimeUntil(): Map<String, List<Any>> {
+    private suspend fun totalTimeUntil(): Map<String, List<Any>> {
         val l = statisticsDAO.totalTimeUntil(today.minus(7, DateTimeUnit.DAY), today)
         return mapOf(
             "日付" to l.keys.map { "${it.year}/${it.monthNumber}/${it.dayOfMonth}" },
