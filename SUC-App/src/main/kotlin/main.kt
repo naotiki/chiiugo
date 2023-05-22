@@ -157,7 +157,6 @@ fun main() = application {
                 val a=launch{
                     delay(Random.nextLong(5000, 7000))
                     val stt = (0..30).random()
-                    println(stt)
                     if (stt == 0) {
                         mascotState.change(MascotEventType.Fall)
                     } else if (stt in 1..7) {
@@ -250,10 +249,12 @@ fun main() = application {
         //Noneに戻す
         mascotState.change(MascotEventType.Run)
     }
+    var exitCount by remember { mutableStateOf(0) }
     //Windowを表示
     Window(
-        onCloseRequest = ::exitApplication,
+        onCloseRequest ={exitCount=10},
         state = windowState,
+        focusable = false,
         resizable = false,
         transparent = true,
         undecorated = true,
@@ -291,8 +292,8 @@ fun main() = application {
         }
     }
 
-    var controlWindowTab by remember { mutableStateOf<Int?>(0) }
-    var exitCount by remember { mutableStateOf(0) }
+    var controlWindowTab by remember { mutableStateOf<Int?>(null) }
+
     Tray(painterResource("SUCIcon.png")) {
         Item("設定") {
             controlWindowTab = 1
