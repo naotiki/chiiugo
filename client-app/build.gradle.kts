@@ -49,7 +49,7 @@ dependencies {
 compose.desktop {
     application {
         buildTypes.release.proguard.isEnabled.set(false)
-        mainClass = "mainKt"
+        mainClass = "MainKt"
         jvmArgs += listOf("-Dfile.encoding=UTF-8")
         nativeDistributions {
             targetFormats( TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
