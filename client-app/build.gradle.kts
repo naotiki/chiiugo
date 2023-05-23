@@ -21,7 +21,7 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
 }
-val appVersion = project.properties.getOrDefault("appVersion", "0.0.1-dev").toString()
+val appVersion ="0.0.1"// project.properties.getOrDefault("appVersion", "0.0.1-dev").toString()
 version=appVersion
 dependencies {
     // Note, if you develop a library, you should use compose.desktop.common.
@@ -48,12 +48,13 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "MainKt"
+        buildTypes.release.proguard.isEnabled.set(false)
+        mainClass = "mainKt"
         jvmArgs += listOf("-Dfile.encoding=UTF-8")
         nativeDistributions {
             targetFormats( TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "Chiiugo"
-            description = "ちぃうご(Chiiugo) Client App"
+                // description = "ちぃうご(Chiiugo) Client App"
             linux {
                 debPackageVersion = appVersion.trimStart('v')
                 rpmPackageVersion = appVersion.replace("-", "_")
@@ -61,7 +62,6 @@ compose.desktop {
             }
             windows {
                 packageVersion = appVersion.replace("[^0-9.]".toRegex(), "")
-                console = !buildTypes.release.proguard.isEnabled.getOrElse(false)
                 menu = true
                 shortcut = true
                 dirChooser = true
@@ -88,12 +88,12 @@ tasks.withType(org.gradle.jvm.tasks.Jar::class) {
 }
 val os = System.getProperty("os.name").replace(" ", "_")
 tasks.register("superReleaseBuild") {
-
+    group="build"
     dependsOn(
         "removeArchives",
         "packageReleaseUberJarForCurrentOS",
         "packageReleaseDistributionForCurrentOS",
-        "createReleaseDistributable"
+        "createReleaseDistributable"//Ignore "Release" to avoid ktx-datetime and proguard bug
     )
     doLast {
         val app = file("build/compose/binaries/main-release/app")
