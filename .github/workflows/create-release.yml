@@ -1,0 +1,41 @@
+name: Create Release Draft Compose Desktop
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'vX.X.X'
+        required: true
+        type: string
+permissions:
+  contents: write
+jobs:
+  build:
+    if: startsWith( inputs.version || github.ref_name , 'v' )
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    uses: ./.github/workflows/build-compose.yml
+    with:
+      version: ${{ inputs.version || github.ref_name }}
+      os: ${{ matrix.os }}
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          path: ./out
+      - name: Display structure of downloaded files
+        run: ls -R
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: (Draft) Release ${{ inputs.version || github.ref_name }}
+          draft: true
+          files: |
+            ./out/*/binaries/**/*.*
+            ./out/*/jars/*.jar

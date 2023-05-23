@@ -1,4 +1,6 @@
+import org.gradle.kotlin.dsl.support.zipTo
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 
 plugins {
     kotlin("jvm")
@@ -19,7 +21,8 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
 }
-
+val appVersion = project.properties.getOrDefault("appVersion", "0.0.1-dev").toString()
+version=appVersion
 dependencies {
     // Note, if you develop a library, you should use compose.desktop.common.
     // compose.desktop.currentOs should be used in launcher-sourceSet
@@ -46,11 +49,55 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "MainKt"
-
+        jvmArgs += listOf("-Dfile.encoding=UTF-8")
         nativeDistributions {
-            targetFormats( TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "KotlinJvmComposeDesktopApplication"
-            packageVersion = "1.0.0"
+            targetFormats( TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
+            packageName = "Chiiugo"
+            description = "ちぃうご(Chiiugo) Client App"
+            linux {
+                debPackageVersion = appVersion.trimStart('v')
+                rpmPackageVersion = appVersion.replace("-", "_")
+                shortcut = true
+            }
+            windows {
+                packageVersion = appVersion.replace("[^0-9.]".toRegex(), "")
+                console = !buildTypes.release.proguard.isEnabled.getOrElse(false)
+                menu = true
+                shortcut = true
+                dirChooser = true
+            }
         }
+    }
+}
+tasks.withType(AbstractJPackageTask::class) {
+    doLast {
+        val artifact = this@withType.outputs.files.singleFile.listFiles()!!.single()
+        println(artifact.absolutePath)
+    }
+}
+tasks.register<Delete>("removeArchives") {
+    delete(fileTree("build/compose/binaries/main-release/app") {
+        include("**/*.zip")
+    })
+    delete(fileTree("build/compose/jars") {
+        include("*.jar")
+    })
+}
+tasks.withType(org.gradle.jvm.tasks.Jar::class) {
+    mustRunAfter("removeArchives")
+}
+val os = System.getProperty("os.name").replace(" ", "_")
+tasks.register("superReleaseBuild") {
+
+    dependsOn(
+        "removeArchives",
+        "packageReleaseUberJarForCurrentOS",
+        "packageReleaseDistributionForCurrentOS",
+        "createReleaseDistributable"
+    )
+    doLast {
+        val app = file("build/compose/binaries/main-release/app")
+        val zip = file(app.toPath().resolve("Chiiugo-$os-$appVersion.zip"))
+        zipTo(zip, app.listFiles()!!.single())
     }
 }
