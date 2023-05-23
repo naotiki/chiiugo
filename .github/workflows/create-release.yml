@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
-    uses: ./.github/workflows/build-compose.yml
+    uses: ./.github/workflows/build-client.yml
     with:
       version: ${{ inputs.version || github.ref_name }}
       os: ${{ matrix.os }}
