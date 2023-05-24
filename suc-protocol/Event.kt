@@ -1,11 +1,12 @@
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.protobuf.schema.ProtoBufSchemaGenerator
 import java.nio.ByteBuffer
 
 
 @Serializable
-sealed interface Event {
+sealed class Event {
     @Serializable
     data class OpenProject(val projectName:String):Event
     @Serializable
@@ -48,4 +49,15 @@ const val HeaderSize = Int.SIZE_BYTES
 fun ByteArray.addHeader(): ByteArray {
 
     return ByteBuffer.allocate(HeaderSize + size).putInt(size).put(this).array()
+}
+private fun main(){
+    generateProtoBufScheme()
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+fun generateProtoBufScheme() {
+    val descriptors = listOf(ServerProtocol.serializer().descriptor)
+    val schemas = //ProtoBufSchemaGenerator.generateSchemaText(descriptors)
+    ProtoBufSchemaGenerator.generateSchemaText(ServerProtocol.serializer().descriptor)
+    println(schemas)
 }
