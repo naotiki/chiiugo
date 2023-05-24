@@ -52,6 +52,7 @@ compose.desktop {
         mainClass = "MainKt"
         jvmArgs += listOf("-Dfile.encoding=UTF-8")
         nativeDistributions {
+             modules("java.sql")
             targetFormats( TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "Chiiugo"
                 // description = "ちぃうご(Chiiugo) Client App"
