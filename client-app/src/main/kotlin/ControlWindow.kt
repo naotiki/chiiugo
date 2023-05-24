@@ -26,6 +26,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.*
 import org.jetbrains.compose.animatedimage.Blank
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.kotlinx.kandy.dsl.invoke
 import org.jetbrains.kotlinx.kandy.dsl.plot
@@ -40,11 +42,11 @@ import kotlin.time.DurationUnit
 val startTime = Clock.System.now()
 const val areaScale = 300
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalResourceApi::class)
 @Composable
 fun ControlWindow(visible: Boolean = true, serverState: ServerState, onCloseRequest: () -> Unit, selectedTab: Int) {
     val statisticsState = rememberStatisticsState(serverState)
-    Window(onCloseRequest = onCloseRequest, visible = visible) {
+    Window(onCloseRequest = onCloseRequest, visible = visible, icon = painterResource("SUCIcon.png")) {
         Surface {
             val screenSize = rememberScreenSize()
 

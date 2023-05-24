@@ -252,7 +252,7 @@ fun main() = application {
     var exitCount by remember { mutableStateOf(0) }
     //Windowを表示
     Window(
-        onCloseRequest ={exitCount=10},
+        onCloseRequest = {exitCount=10},
         state = windowState,
         focusable = false,
         resizable = false,
