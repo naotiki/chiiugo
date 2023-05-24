@@ -34,7 +34,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: 'adopt'
+          distribution: 'temurin'
       - name: Make gradlew executable
         run: chmod +x ./client-app/gradlew
       - name: Build with Gradle

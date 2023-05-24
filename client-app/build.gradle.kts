@@ -52,16 +52,17 @@ compose.desktop {
         mainClass = "MainKt"
         jvmArgs += listOf("-Dfile.encoding=UTF-8")
         nativeDistributions {
-             modules("java.sql")
+            modules("java.sql")
             targetFormats( TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "Chiiugo"
-                // description = "ちぃうご(Chiiugo) Client App"
+            description = "Chiiugo Client App"
             linux {
                 debPackageVersion = appVersion.trimStart('v')
                 rpmPackageVersion = appVersion.replace("-", "_")
                 shortcut = true
             }
             windows {
+                perUserInstall=true
                 packageVersion = appVersion.replace("[^0-9.]".toRegex(), "")
                 menu = true
                 shortcut = true
