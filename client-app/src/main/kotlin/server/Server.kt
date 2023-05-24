@@ -9,6 +9,7 @@ import kotlinx.serialization.decodeFromByteArray
 import java.io.DataInputStream
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketException
 import java.nio.ByteBuffer
 class Server(val port: Int=PORT) {
     val serverSocket = ServerSocket(port)
@@ -16,9 +17,15 @@ class Server(val port: Int=PORT) {
     suspend fun runServer()= withContext(Dispatchers.IO){
         suspendCancellableCoroutine<Unit> {
             it.invokeOnCancellation { serverSocket.close() }
-            while (it.isActive){
-                val socket=serverSocket.accept()
-                ServerThread(socket).start()
+            runCatching {
+                while (it.isActive){
+                    val socket=serverSocket.accept()
+                    ServerThread(socket).start()
+                }
+            }.onFailure { throwable ->
+                if (throwable is SocketException){
+                    throwable.printStackTrace()
+                }else throw throwable
             }
             println("Server Shutdown")
         }
