@@ -15,9 +15,11 @@
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
     IntelliJ Plugin for Chiiugo.<br>
-    Chiiugo Client App is required.<br>
+    <a href="https://github.com/naotiki/chiiugo/releases/latest">Chiiugo Client App</a> is required.<br>
+    To connect chiiugo, Click <b>Tools | Connect to Chiiugo</b>
     ちぃうごのIntelliJ用プラグインです。<br>
-    ちぃうごクライアントアプリが必要です。
+    <a href="https://github.com/naotiki/chiiugo/releases/latest">ちぃうごクライアントアプリ</a> が必要です。<br>
+    ちぃうごと接続するには <b>Tools | Connect to Chiiugo</b> をクリックしてください。
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.
@@ -39,7 +41,7 @@
     </projectListeners>
     <actions>
         <action id="me.naotiki.sucideaplugin.PopupDialogAction" class="me.naotiki.sucideaplugin.PopupDialogAction"
-                text="クライアントに接続" description="SUCクライアントに接続を試みます">
+                text="Connect to Chiiugo" description="Try to connect chiiugo client app">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
     </actions>
