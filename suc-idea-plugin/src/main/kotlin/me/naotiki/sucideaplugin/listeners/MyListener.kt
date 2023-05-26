@@ -16,6 +16,7 @@ import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.util.application
+import kotlinx.coroutines.runBlocking
 
 
 class MyListener(val project: Project) : ExecutionListener {
@@ -91,7 +92,9 @@ class ProjectStartupActivity : StartupActivity, ProjectManagerListener {
 
     override fun runActivity(project: Project) {
 
-        socketService.startServer()
+        runBlocking {
+            socketService.startServer()
+        }
         socketService.sendData(
             SendEvent(
                 Event.OpenProject(project.name)

@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.refactoring.rename.RenameUsagesCollector.Companion.started
+import kotlinx.coroutines.runBlocking
 
 class PopupDialogAction : AnAction() {
 
@@ -17,7 +18,10 @@ class PopupDialogAction : AnAction() {
 
     }
     override fun actionPerformed(e: AnActionEvent) {
-        server.startServer()
+        println("Try ReConnect Server")
+        runBlocking {
+            server.startServer()
+        }
         val project=e.project
         if (project!=null){
             server.sendData(

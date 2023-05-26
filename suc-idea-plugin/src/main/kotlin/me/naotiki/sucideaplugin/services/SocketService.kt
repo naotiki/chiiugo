@@ -1,5 +1,3 @@
-import Event.OpenProject
-import ServerProtocol.SendEvent
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
@@ -17,15 +15,19 @@ import java.net.UnknownHostException
 @Service
 class SocketService : Disposable {
     private var coroutineScope = CoroutineScope(Dispatchers.IO)
-    private var socket: Socket?=null
+    private var socket: Socket? = null
     private val notificationGroup = NotificationGroupManager.getInstance()
         .getNotificationGroup("SUC-Notification")
-    val connecting get() = socket?.isConnected==true&&socket?.isClosed==false
+    val connecting get() = socket?.isConnected == true && socket?.isClosed == false
+
     @OptIn(ExperimentalSerializationApi::class)
-    fun startServer(): Boolean {
+    suspend fun startServer(): Boolean {
         return runCatching {
+            println("Try Close Server")
             closeServer()
+            println("Closed")
             socket = Socket("127.0.0.1", PORT)
+            println("Connected")
             val dataInputStream = DataInputStream(socket!!.getInputStream())
             notificationGroup.createNotification("[Debug] Connected !", NotificationType.INFORMATION)
                 .notify(null)
@@ -38,21 +40,21 @@ class SocketService : Disposable {
                             ServerProtocol.End -> {
                                 closeServer()
                             }
-                            ServerProtocol.Error -> TODO()
-                            ServerProtocol.Hello -> TODO()
-                            else -> {
 
+                            else -> {
+                                println(e)
                             }
                         }
                     }
-                    if (!connecting){
+                    if (!connecting) {
+                        println("Close In While")
                         closeServer()
                     }
                 }
             }
             sendData(ServerProtocol.Hello, null)
         }.fold({
-            true
+            it != null
         }, {
             if (it is UnknownHostException || it is IOException) {
                 it.printStackTrace()
@@ -62,12 +64,14 @@ class SocketService : Disposable {
     }
 
     private val outputStream get() = socket!!.getOutputStream()
-    fun sendData(serverProtocol: ServerProtocol, project: Project? ): Job {
-        if (socket==null){
-            startServer()
+    fun sendData(serverProtocol: ServerProtocol, project: Project?): Job? {
+        if (socket == null) {
+            if (!runBlocking { startServer() }) {
+                println("Failed to Start Server")
+                return null
+            }
         }
-        notificationGroup.createNotification("[Debug] Send: $serverProtocol", NotificationType.INFORMATION)
-            .notify(project)
+        println("[Debug] Send: $serverProtocol")
         return coroutineScope.launch {
             withContext(Dispatchers.IO) {
                 outputStream.write(convertByteArray(serverProtocol))
@@ -77,20 +81,27 @@ class SocketService : Disposable {
     }
 
 
-    fun closeServer(){
-        println("Close Server")
+    suspend fun closeServer() {
+        println("IN :Close Server")
         coroutineScope.cancel()
-        coroutineScope= CoroutineScope(Dispatchers.IO)
-        if (!connecting)return
-        runBlocking {
-            sendData(ServerProtocol.End,null).join()
-        }
+        coroutineScope = CoroutineScope(Dispatchers.IO)
+        if (connecting) {
+            println("Try send End Protocol")
+            withTimeout(1000) {
+                coroutineScope.launch {
+                    sendData(ServerProtocol.End, null)?.join()
+                }.join()
+            }
+        }else println("Not Connecting")
+        println("Try socket close")
         socket?.close()
-        socket=null
+        socket = null
     }
 
     override fun dispose() {
-        closeServer()
+        runBlocking {
+            closeServer()
+        }
         coroutineScope.cancel()
     }
 }
