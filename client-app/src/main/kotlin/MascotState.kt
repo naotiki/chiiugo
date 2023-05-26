@@ -1,5 +1,5 @@
 import androidx.compose.runtime.*
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -71,25 +71,29 @@ class MascotState(mascotEventType: MascotEventType, serverState: ServerState) {
 
         }
     }
-
+    val stateCoroutineScope= CoroutineScope(Dispatchers.Default)
     //nullで吹き出し非表示
     private val serif = MutableStateFlow<String?>(null)
     val serifFlow = serif.asStateFlow()
     suspend fun speak(string: String, delayMillis: Long, important: Boolean = false) {
-        //println("Say $important ${serif.value}→ $string")
+
+        println("Say $important ${serif.value}→ $string")
         if (important) {
             serif.emit(string)
         } else if (serif.value == null) {
             serif.emit(string)
-        } else return delay(1000)//yield()でもOK return のみだとUI Threadがブロックされる
-        delay(delayMillis)
-        serif.compareAndSet(string, null)
+        } else return yield()//yield()でもOK return のみだとUI Threadがブロックされる
+        stateCoroutineScope.launch {
+            delay(delayMillis)
+            serif.compareAndSet(string, null)
+        }.start()
     }
 
 
 
     private var previousEventType by mutableStateOf<MascotEventType>(MascotEventType.None)
     suspend fun change(state: MascotEventType) {
+        println("Changed:"+state)
         previousEventType = stateFlow.value
         stateFlow.emit(state)
     }

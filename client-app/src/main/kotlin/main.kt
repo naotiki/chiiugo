@@ -70,7 +70,7 @@ fun main() = application {
     }
     val serverState = rememberServerState()
     //SUCの状態
-    val mascotState = rememberMascotState(MascotEventType.Run, serverState)
+    val mascotState = rememberMascotState(MascotEventType.None, serverState)
     val mascotEventType by mascotState.flow.collectAsState()
     //       ↓MascotEventTypeが変更されたら初期値 SUC.gifに
     var gifName by remember(mascotEventType) { mutableStateOf("SUC.gif") }
@@ -196,6 +196,7 @@ fun main() = application {
                         )
                     )
                         a.join()
+                return@LaunchedEffect//状態変更が保証されている
             }
             /*MascotEventType.Chat->{
                 while (true){
