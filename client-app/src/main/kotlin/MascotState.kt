@@ -75,18 +75,21 @@ class MascotState(mascotEventType: MascotEventType, serverState: ServerState) {
     //nullで吹き出し非表示
     private val serif = MutableStateFlow<String?>(null)
     val serifFlow = serif.asStateFlow()
-    suspend fun speak(string: String, delayMillis: Long, important: Boolean = false) {
+    suspend fun speak(string: String, delayMillis: Long, important: Boolean = false): Job? {
 
         println("Say $important ${serif.value}→ $string")
         if (important) {
             serif.emit(string)
         } else if (serif.value == null) {
             serif.emit(string)
-        } else return yield()//yield()でもOK return のみだとUI Threadがブロックされる
-        stateCoroutineScope.launch {
+        } else {
+            yield()
+            return null
+        }//yield()でもOK return のみだとUI Threadがブロックされる
+        return stateCoroutineScope.launch {
             delay(delayMillis)
             serif.compareAndSet(string, null)
-        }.start()
+        }
     }
 
 

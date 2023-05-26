@@ -100,7 +100,7 @@ fun main() = application {
             MascotEventType.Explosion -> {
                 gifName = "boom.gif"
 
-                mascotState.speak("ビルド失敗！！！", 5000, true)
+                mascotState.speak("ビルド失敗！！！", 5000, true)?.join()
 
             }//コンパイルエラー
             MascotEventType.Fall -> {
