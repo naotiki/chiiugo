@@ -5,6 +5,7 @@
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.protobuf.ProtoBuf
 
 @Serializable
 sealed class Event{
@@ -48,7 +49,7 @@ sealed class ServerProtocol{
 
 @OptIn(ExperimentalSerializationApi::class)
 fun <T:ServerProtocol> convertByteArray(serverProtocol: T): ByteArray {
-    return addHeader(Cbor.encodeToByteArray(ServerProtocol.serializer(),serverProtocol))
+    return addHeader(ProtoBuf.encodeToByteArray(ServerProtocol.serializer(),serverProtocol))
 }
 
 const val PORT=0xCAD

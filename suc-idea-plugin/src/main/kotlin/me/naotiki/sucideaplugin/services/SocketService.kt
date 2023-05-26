@@ -7,8 +7,8 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
+import kotlinx.serialization.protobuf.ProtoBuf
 import java.io.DataInputStream
 import java.io.IOException
 import java.net.Socket
@@ -34,7 +34,7 @@ class SocketService : Disposable {
                     if (dataInputStream.available() >= HeaderSize) {
                         val dataLength = dataInputStream.readInt()
                         val byteData = dataInputStream.readNBytes(dataLength)
-                        when (Cbor.decodeFromByteArray<ServerProtocol>(byteData)) {
+                        when (val e=ProtoBuf.decodeFromByteArray<ServerProtocol>(byteData)) {
                             ServerProtocol.End -> {
                                 closeServer()
                             }
@@ -70,7 +70,7 @@ class SocketService : Disposable {
             .notify(project)
         return coroutineScope.launch {
             withContext(Dispatchers.IO) {
-                outputStream.write(serverProtocol.convertByteArray())
+                outputStream.write(convertByteArray(serverProtocol))
                 outputStream.flush()
             }
         }

@@ -6,3 +6,4 @@ pluginManagement {
 }
 
 rootProject.name = "suc-idea-plugin"
+includeFlat("chiiugo-protocol-core")

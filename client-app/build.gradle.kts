@@ -45,6 +45,8 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
     implementation("com.h2database:h2:2.1.214")
+
+    implementation(project(":chiiugo-protocol-core"))
 }
 
 compose.desktop {

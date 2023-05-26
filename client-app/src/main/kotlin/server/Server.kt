@@ -1,16 +1,13 @@
-
-
 import ServerProtocol.SendEvent
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
+import kotlinx.serialization.protobuf.ProtoBuf
 import java.io.DataInputStream
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
-import java.nio.ByteBuffer
+
 class Server(val port: Int=PORT) {
     val serverSocket = ServerSocket(port)
 
@@ -50,7 +47,7 @@ class Server(val port: Int=PORT) {
                 if (sin.available() >= HeaderSize) {
                     val size =sin.readInt()
                     print("Size=$size:")
-                    val data=Cbor.decodeFromByteArray<ServerProtocol>(sin.readNBytes(size))
+                    val data=ProtoBuf.decodeFromByteArray<ServerProtocol>(sin.readNBytes(size))
                     if (data is SendEvent){
 
                         callbacks.forEach { coroutineScope.launch { it(data.event,id) } }
@@ -79,7 +76,7 @@ class Server(val port: Int=PORT) {
         override fun interrupt() {
             timeoutJob.cancel()
             socket.getOutputStream().apply {
-                write(ServerProtocol.End.convertByteArray())
+                write(convertByteArray(ServerProtocol.End))
                 flush()
             }
             socket.close()

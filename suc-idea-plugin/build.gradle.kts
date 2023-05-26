@@ -24,6 +24,7 @@ dependencies{
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.5.0")
+    implementation(project(":chiiugo-protocol-core"))
 }
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html

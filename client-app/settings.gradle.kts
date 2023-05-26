@@ -9,3 +9,4 @@ pluginManagement {
         id("org.jetbrains.compose").version(extra["compose.version"] as String)
     }
 }
+includeFlat("chiiugo-protocol-core")

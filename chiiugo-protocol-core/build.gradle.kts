@@ -1,6 +1,6 @@
 plugins {
-    kotlin("multiplatform") version "1.8.21"
-    kotlin("plugin.serialization") version "1.8.21"
+    kotlin("multiplatform")
+    kotlin("plugin.serialization")
 }
 
 group = "me.naotiki"
