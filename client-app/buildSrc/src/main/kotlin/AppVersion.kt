@@ -14,7 +14,7 @@ data class AppVersion(
 
 ){
     fun generateWindowsVersion(): String {
-        return "$major.$minor.$patch${revision?.ordinal?:Revision.values().size}${revisionNumber?:"0"}"
+        return "$major.$minor.$patch${revision?.ordinal?:Revision.values().size}${revisionNumber?:"00"}"
     }
     fun generateRpmVersion(): String {
         return buildString {
