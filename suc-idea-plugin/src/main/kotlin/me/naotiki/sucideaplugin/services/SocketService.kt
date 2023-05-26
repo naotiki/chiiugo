@@ -29,7 +29,7 @@ class SocketService : Disposable {
             socket = Socket("127.0.0.1", PORT)
             println("Connected")
             val dataInputStream = DataInputStream(socket!!.getInputStream())
-            notificationGroup.createNotification("[Debug] Connected !", NotificationType.INFORMATION)
+            notificationGroup.createNotification("Hello, Chiiugo!", NotificationType.INFORMATION)
                 .notify(null)
             coroutineScope.launch {
                 while (isActive) {
@@ -66,10 +66,7 @@ class SocketService : Disposable {
     private val outputStream get() = socket!!.getOutputStream()
     fun sendData(serverProtocol: ServerProtocol, project: Project?): Job? {
         if (socket == null) {
-            if (!runBlocking { startServer() }) {
-                println("Failed to Start Server")
-                return null
-            }
+            return null
         }
         println("[Debug] Send: $serverProtocol")
         return coroutineScope.launch {
@@ -82,18 +79,15 @@ class SocketService : Disposable {
 
 
     suspend fun closeServer() {
-        println("IN :Close Server")
         coroutineScope.cancel()
         coroutineScope = CoroutineScope(Dispatchers.IO)
         if (connecting) {
-            println("Try send End Protocol")
             withTimeout(1000) {
                 coroutineScope.launch {
                     sendData(ServerProtocol.End, null)?.join()
                 }.join()
             }
-        }else println("Not Connecting")
-        println("Try socket close")
+        }
         socket?.close()
         socket = null
     }
