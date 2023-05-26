@@ -21,8 +21,10 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
 }
-val appVersion ="0.0.1"// project.properties.getOrDefault("appVersion", "0.0.1-dev").toString()
-version=appVersion
+
+
+val appVersion = AppVersion.parseAppVersion(project.properties.getOrDefault("appVersion", "v0.0.1-dev1").toString())
+version=appVersion.toString()
 dependencies {
     // Note, if you develop a library, you should use compose.desktop.common.
     // compose.desktop.currentOs should be used in launcher-sourceSet
@@ -59,14 +61,15 @@ compose.desktop {
             targetFormats( TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "Chiiugo"
             description = "Chiiugo Client App"
+            vendor="Naotiki"
             linux {
-                debPackageVersion = appVersion.trimStart('v')
-                rpmPackageVersion = appVersion.replace("-", "_")
+                debPackageVersion = appVersion.generateDebVersion()
+                rpmPackageVersion = appVersion.generateRpmVersion()
                 shortcut = true
             }
             windows {
                 perUserInstall=true
-                packageVersion = appVersion.replace("[^0-9.]".toRegex(), "")
+                packageVersion = appVersion.generateWindowsVersion()
                 menu = true
                 shortcut = true
                 dirChooser = true
