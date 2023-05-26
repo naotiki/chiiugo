@@ -1,21 +1,25 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>me.naotiki.suc-idea-plugin</id>
+    <id>me.naotiki.chiiugo-ij-plugin</id>
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Suc-idea-plugin</name>
+    <name>Chiiugo</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="support@yourcompany.com" url="https://www.yourcompany.com">YourCompany</vendor>
+    <vendor email="contact@naotiki.me" url="https://naotiki.me">naotiki</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
+    IntelliJ Plugin for Chiiugo.<br>
+    <a href="https://github.com/naotiki/chiiugo/releases/latest">Chiiugo Client App</a> is required.<br>
+    To connect chiiugo, Click <b>Tools | Connect to Chiiugo</b>
+    ちぃうごのIntelliJ用プラグインです。<br>
+    <a href="https://github.com/naotiki/chiiugo/releases/latest">ちぃうごクライアントアプリ</a> が必要です。<br>
+    ちぃうごと接続するには <b>Tools | Connect to Chiiugo</b> をクリックしてください。
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.
@@ -37,7 +41,7 @@
     </projectListeners>
     <actions>
         <action id="me.naotiki.sucideaplugin.PopupDialogAction" class="me.naotiki.sucideaplugin.PopupDialogAction"
-                text="クライアントに接続" description="SUCクライアントに接続を試みます">
+                text="Connect to Chiiugo" description="Try to connect chiiugo client app">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
     </actions>
