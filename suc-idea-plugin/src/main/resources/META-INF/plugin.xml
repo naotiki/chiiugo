@@ -16,7 +16,7 @@
     <description><![CDATA[
     IntelliJ Plugin for Chiiugo.<br>
     <a href="https://github.com/naotiki/chiiugo/releases/latest">Chiiugo Client App</a> is required.<br>
-    To connect chiiugo, Click <b>Tools | Connect to Chiiugo</b>
+    To connect chiiugo, Click <b>Tools | Connect to Chiiugo</b> <br>
     ちぃうごのIntelliJ用プラグインです。<br>
     <a href="https://github.com/naotiki/chiiugo/releases/latest">ちぃうごクライアントアプリ</a> が必要です。<br>
     ちぃうごと接続するには <b>Tools | Connect to Chiiugo</b> をクリックしてください。
