@@ -1,3 +1,6 @@
+import java.util.*
+import kotlin.reflect.KProperty
+
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.8.20"
@@ -5,8 +8,10 @@ plugins {
     kotlin("plugin.serialization") version "1.8.10"
 }
 
+val publishProperties=Properties()
+publishProperties.load(file("publish.properties").bufferedReader())
 group = "me.naotiki"
-version = "1.0-SNAPSHOT"
+version = "1.0-SNAPSHOT3"
 sourceSets{
     kotlin{
         main{
@@ -29,7 +34,7 @@ dependencies{
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2022.3.3")
+    version.set("2022.2.5")
     type.set("IC") // Target IDE Platform
 
     plugins.set(listOf(/* Plugin Dependencies */))
@@ -51,12 +56,12 @@ tasks {
     }
 
     signPlugin {
-        certificateChain.set(System.getenv("CERTIFICATE_CHAIN"))
-        privateKey.set(System.getenv("PRIVATE_KEY"))
-        password.set(System.getenv("PRIVATE_KEY_PASSWORD"))
+        certificateChainFile.set(file("certificate/chain.crt"))
+        privateKeyFile.set(file("certificate/private.pem"))
+        password.set(publishProperties.getProperty("password"))
     }
 
     publishPlugin {
-        token.set(System.getenv("PUBLISH_TOKEN"))
+        token.set(publishProperties.getProperty("token"))
     }
 }
