@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
@@ -27,6 +28,7 @@ import kotlin.random.Random
 
 @Composable
 fun Mascot(){
+    val configState by configStateFlow.collectAsState()
     val screenSize=rememberScreenSize()
 
     val mascotState = rememberMascotState(screenSize)
@@ -36,6 +38,10 @@ fun Mascot(){
         launch {
             mascotState.loop()
         }
+    }
+    LaunchedEffect(configState.imageSize){
+
+        windowState.size=DpSize.Unspecified
     }
     //画面スケール変更時
     val size= remember(windowState.size.isSpecified) { windowState.size }
@@ -50,7 +56,6 @@ fun Mascot(){
         windowState.position = mascotState.windowsPosState
     }
 
-    val configState by configStateFlow.collectAsState()
     //SUCの状態
     Window(
         onCloseRequest = {},
@@ -69,12 +74,12 @@ fun Mascot(){
                     loadResourceAnimatedImage(mascotState.gifName)
                 }?.animate() ?: ImageBitmap.Blank,
                 null,
-                Modifier.size(imageSizeDp), colorFilter = ColorFilter.tint(mascotState.colorState, BlendMode.Modulate),
+                Modifier.size(configState.imageSize.dp), colorFilter = ColorFilter.tint(mascotState.colorState, BlendMode.Modulate),
             )
             val serif by mascotState.serifFlow.collectAsState()
 
             Box(
-                modifier = Modifier.padding(start = 150.dp, top = 50.dp).width(150.dp)
+                modifier = Modifier.padding(start = configState.imageSize.dp-(configState.imageSize.dp*0.05f), top = (configState.imageSize.dp*0.05f)).width(150.dp)
             ) {
                 if (serif != null) {
                     Text(

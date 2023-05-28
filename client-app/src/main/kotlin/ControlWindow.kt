@@ -102,15 +102,13 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
                             val configState by ConfigManager.configStateFlow.collectAsState()
                             Text("領域設定", Modifier, fontSize = 25.sp)
                             val offset =
-                                remember {
+                                remember(screenSize.density) {
                                     Offset(
                                         screenSize.toPx(areaScale.dp),
                                         screenSize.toPx((areaScale * (1 / screenSize.aspectRatio).dp))
                                     )
                                 }
-
-
-                            var handleOffset by remember(offset, configState) {
+                            var handleOffset by remember(offset, configState.areaSize) {
                                 mutableStateOf(
                                     Offset(
                                         offset.x * configState.areaSize.first,
@@ -126,7 +124,7 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
                                     )
                                 }
 
-                            var areaOffset by remember(offset, configState) {
+                            var areaOffset by remember(offset, configState.areaOffset) {
                                 mutableStateOf(
                                     Offset(
                                         offset.x * configState.areaOffset.first,
@@ -178,28 +176,45 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
                                     Button({
                                         handleOffset = offset * 0.8f
                                         areaOffset = Offset.Zero
-                                    }) { Text("Reset") }
+                                    }) { Text("リセット") }
                                 }
                             }
-                            var alwaysTop by remember { mutableStateOf(configState.alwaysTop) }
+                            var alwaysTop by remember(configState.alwaysTop) { mutableStateOf(configState.alwaysTop) }
                             Row(Modifier, verticalAlignment = Alignment.CenterVertically) {
                                 Text("常に最前面で表示")
                                 Checkbox(alwaysTop, { alwaysTop = it })
                             }
-                            Button({
-                                coroutineScope.launch {
-                                    ConfigManager.apply {
-                                        this.areaOffset =
-                                            screenSize.toDp(areaOffset.x).value / areaScale to screenSize.toDp(
-                                                areaOffset.y
-                                            ).value / (areaScale * (1 / screenSize.aspectRatio))
-                                        this.areaSize =
-                                            areaSize.width.value / areaScale to areaSize.height.value / (areaScale * (1 / screenSize.aspectRatio))
-                                        this.alwaysTop = alwaysTop
+                            Text("試験的設定")
+                            var imageSize by remember(configState.imageSize) { mutableStateOf(configState.imageSize) }
+                            Row(Modifier, verticalAlignment = Alignment.CenterVertically) {
+                                Text("画像の大きさ")
+                                Slider(imageSize,{imageSize=it}, valueRange = 1f..350f)
+                            }
+
+                            Row (Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.spacedBy(5.dp,Alignment.End)){
+                                Button({
+                                    coroutineScope.launch {
+                                        ConfigManager.apply(ConfigData())
                                     }
+                                }, ) {
+                                    Text("リセット")
                                 }
-                            }, Modifier.align(Alignment.End)) {
-                                Text("適用")
+                                Button({
+                                    coroutineScope.launch {
+                                        ConfigManager.apply {
+                                            this.areaOffset =
+                                                screenSize.toDp(areaOffset.x).value / areaScale to screenSize.toDp(
+                                                    areaOffset.y
+                                                ).value / (areaScale * (1 / screenSize.aspectRatio))
+                                            this.areaSize =
+                                                areaSize.width.value / areaScale to areaSize.height.value / (areaScale * (1 / screenSize.aspectRatio))
+                                            this.alwaysTop = alwaysTop
+                                            this.imageSize=imageSize
+                                        }
+                                    }
+                                }, ) {
+                                    Text("適用")
+                                }
                             }
 
                         }

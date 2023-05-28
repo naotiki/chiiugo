@@ -11,6 +11,7 @@ val ConfigJson= Json {
 object ConfigManager {
     const val CONFIG_PATH = "ChiiugoConf.json"
     val configFile  = File(CONFIG_PATH)
+    val configAbusolutePath get() =  configFile.absolutePath
     val configStateFlow = MutableStateFlow(loadDataOrDefault())
     val conf get() = configStateFlow.value
     fun loadDataOrDefault(): ConfigData {
@@ -21,12 +22,14 @@ object ConfigManager {
             configFile.writeText(ConfigJson.encodeToString(ConfigData.serializer(), it))
         }
     }
-
+    suspend fun apply(configData: ConfigData){
+        configStateFlow.emit(configData)
+        configFile.writeText(ConfigJson.encodeToString(ConfigData.serializer(), configData))
+    }
     suspend inline fun apply(configData: ConfigData.() -> Unit) {
         val c = configStateFlow.value.copy()
         c.configData()
-        configStateFlow.emit(c)
-        configFile.writeText(ConfigJson.encodeToString(ConfigData.serializer(), c))
+        apply(c)
     }
 }
 
@@ -34,6 +37,6 @@ object ConfigManager {
 data class ConfigData(
     var areaSize: Pair<Float, Float> = 0.8f to 0.8f,
     var areaOffset: Pair<Float, Float> = 0f to 0f,
-    var alwaysTop:Boolean=true,
-    var imageSize:Float=imageSizeDp.value,
+    var alwaysTop: Boolean = true,
+    var imageSize: Float = 175f,
 )
