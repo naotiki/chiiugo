@@ -8,12 +8,7 @@ sealed interface MascotEventType {
     //なにもないよ
     object None : MascotEventType
     object Run : MascotEventType
-
-    //ランダムに喋る
-    object Chat : MascotEventType
-    data class Speak(val text: String) : MascotEventType
     object Gaming : MascotEventType
-
     //転ぶ
     object Fall : MascotEventType
 
@@ -50,7 +45,6 @@ class MascotState(mascotEventType: MascotEventType, serverState: ServerState) {
                     speak(e.projectName + "を開きました！", 5000, true)
                     //change(Speak(e.projectName))
                 }
-
                 is Event.StartBuild -> {
                     speak(e.buildId + "を実行中", 5000, true)
                 }
@@ -60,15 +54,8 @@ class MascotState(mascotEventType: MascotEventType, serverState: ServerState) {
                 is Event.Typed -> {
                     feed(e.char)
                 }
-
-                is Event.OpenFile -> {
-
-                }
-
-                is Event.CloseFile -> TODO()
-                else -> {}
+                else->{}
             }
-
         }
     }
     val stateCoroutineScope= CoroutineScope(Dispatchers.Default)
@@ -83,9 +70,9 @@ class MascotState(mascotEventType: MascotEventType, serverState: ServerState) {
         } else if (serif.value == null) {
             serif.emit(string)
         } else {
-            yield()
+            yield()//return のみだとUI Threadがブロックされる
             return null
-        }//yield()でもOK return のみだとUI Threadがブロックされる
+        }
         return stateCoroutineScope.launch {
             delay(delayMillis)
             serif.compareAndSet(string, null)
@@ -111,7 +98,6 @@ class MascotState(mascotEventType: MascotEventType, serverState: ServerState) {
         charFlow.emit(char)
     }
 }
-
 @Composable
 fun rememberMascotState(
     initialMascotEventType: MascotEventType = MascotEventType.None, serverState: ServerState
