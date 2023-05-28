@@ -66,6 +66,7 @@ compose.desktop {
                 debPackageVersion = appVersion.generateDebVersion()
                 rpmPackageVersion = appVersion.generateRpmVersion()
                 shortcut = true
+                iconFile.set(file("Chiiugo.png"))
             }
             windows {
                 perUserInstall=true
@@ -73,6 +74,7 @@ compose.desktop {
                 menu = true
                 shortcut = true
                 dirChooser = true
+                iconFile.set(file("Chiiugo.ico"))
             }
         }
     }
