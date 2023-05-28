@@ -185,10 +185,10 @@ class MascotState(private val screenSize: ScreenSize,val coroutine: CoroutineSco
 
     suspend fun feed(char: Char) {
         val anim = Animatable(0f)
-        val e = char to (Random.nextInt(imageSizeDp.value.roundToInt()) to anim)
+        val e = char to (Random.nextInt(ConfigManager.conf.imageSize.roundToInt()) to anim)
         charMap.add(e)
         coroutine.launch {
-            anim.animateTo(imageSizeDp.value - 10, tween(2000, easing = EaseOutBounce))
+            anim.animateTo(ConfigManager.conf.imageSize - 10, tween(2000, easing = EaseOutBounce))
             delay(Random.nextLong(500, 2000))
             charMap.remove(e)
         }

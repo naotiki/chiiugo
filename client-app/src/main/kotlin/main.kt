@@ -89,7 +89,6 @@ fun main() = application {
     ControlWindow(controlWindowTab != null, { controlWindowTab = null }, controlWindowTab ?: 0)
 }
 
-val imageSizeDp: Dp = 175.dp
 
 
 @Suppress("unused")//DVD機能で使うかも
