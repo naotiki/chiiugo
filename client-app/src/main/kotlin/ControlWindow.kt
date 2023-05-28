@@ -34,6 +34,7 @@ import org.jetbrains.kotlinx.kandy.letsplot.layers.bars
 import org.jetbrains.kotlinx.kandy.letsplot.layout
 import org.jetbrains.kotlinx.kandy.letsplot.x
 import org.jetbrains.kotlinx.kandy.letsplot.y
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
 
@@ -184,13 +185,17 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
                                 Text("常に最前面で表示")
                                 Checkbox(alwaysTop, { alwaysTop = it })
                             }
-                            Text("試験的設定")
+                            Text("試験的設定 (危険)")
                             var imageSize by remember(configState.imageSize) { mutableStateOf(configState.imageSize) }
                             Row(Modifier, verticalAlignment = Alignment.CenterVertically) {
-                                Text("画像の大きさ")
+                                Text("画像の大きさ\n${imageSize.roundToInt()} dp")
                                 Slider(imageSize,{imageSize=it}, valueRange = 1f..350f)
                             }
-
+                            var spawnCount by remember(configState.spawnCount) { mutableStateOf(configState.spawnCount) }
+                            Row(Modifier, verticalAlignment = Alignment.CenterVertically) {
+                                Text("ちぃうごの数\n$spawnCount")
+                                Slider(spawnCount.toFloat(),{spawnCount= it.roundToInt() }, valueRange = 1f..100f, steps = 100)
+                            }
                             Row (Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.spacedBy(5.dp,Alignment.End)){
                                 Button({
                                     coroutineScope.launch {
@@ -210,6 +215,7 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
                                                 areaSize.width.value / areaScale to areaSize.height.value / (areaScale * (1 / screenSize.aspectRatio))
                                             this.alwaysTop = alwaysTop
                                             this.imageSize=imageSize
+                                            this.spawnCount=spawnCount
                                         }
                                     }
                                 }, ) {

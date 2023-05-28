@@ -24,7 +24,7 @@ val server by lazy { SocketServer() }
 @OptIn(ExperimentalResourceApi::class, ExperimentalComposeUiApi::class)
 fun main() = application {
     val coroutineScope = rememberCoroutineScope()
-
+    val configState by ConfigManager.configStateFlow.collectAsState()
     DisposableEffect(Unit) {
         DatabaseFactory.init()
         coroutineScope.launch { server.runServer() }
@@ -35,7 +35,9 @@ fun main() = application {
 
     var exitCount by remember { mutableStateOf(0) }
     //Windowを表示
-    Mascot()
+    repeat(configState.spawnCount){
+        Mascot()
+    }
     var controlWindowTab by remember { mutableStateOf<Int?>(null) }
     /*Bitmap Only*/
     Tray(painterResource("SUCIcon.png")) {
