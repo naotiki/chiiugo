@@ -39,4 +39,5 @@ data class ConfigData(
     var areaOffset: Pair<Float, Float> = 0f to 0f,
     var alwaysTop: Boolean = true,
     var imageSize: Float = 175f,
+    var spawnCount: Int = 1,
 )
