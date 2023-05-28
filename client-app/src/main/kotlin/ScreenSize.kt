@@ -4,8 +4,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import java.awt.GraphicsEnvironment
-import java.awt.Toolkit
-import javax.management.Query.div
 
 class ScreenSize(density: Density){
     private val graphicEnv= GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -25,5 +23,5 @@ class ScreenSize(density: Density){
 fun rememberScreenSize(): ScreenSize {
     val density = LocalDensity.current
 
-    return remember(density) {println(density.density); ScreenSize(density) }
+    return remember(density) {ScreenSize(density) }
 }

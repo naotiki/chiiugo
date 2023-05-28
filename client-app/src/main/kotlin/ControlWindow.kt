@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Window
 import data.DailyStatistic
 import data.DailyStatistics
-import data.DatabaseFactory
 import data.dbQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,7 +26,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.datetime.*
 import org.jetbrains.compose.animatedimage.Blank
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.kotlinx.kandy.dsl.invoke
 import org.jetbrains.kotlinx.kandy.dsl.plot
@@ -39,14 +37,13 @@ import org.jetbrains.kotlinx.kandy.letsplot.y
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
 
-val startTime = Clock.System.now()
 const val areaScale = 300
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalResourceApi::class)
 @Composable
-fun ControlWindow(visible: Boolean = true, serverState: ServerState, onCloseRequest: () -> Unit, selectedTab: Int) {
-    val statisticsState = rememberStatisticsState(serverState)
-    Window(onCloseRequest = onCloseRequest, visible = visible, icon = painterResource("SUCIcon.png")) {
+fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selectedTab: Int) {
+    val statisticsState = rememberStatisticsState()
+    Window(onCloseRequest = onCloseRequest, visible = visible) {
         Surface {
             val screenSize = rememberScreenSize()
 
@@ -102,7 +99,7 @@ fun ControlWindow(visible: Boolean = true, serverState: ServerState, onCloseRequ
 
                         1 -> {
                             val coroutineScope = rememberCoroutineScope()
-                            val configState by ConfigManager.configState.collectAsState()
+                            val configState by ConfigManager.configStateFlow.collectAsState()
                             Text("領域設定", Modifier, fontSize = 25.sp)
                             val offset =
                                 remember {
@@ -216,15 +213,15 @@ fun ControlWindow(visible: Boolean = true, serverState: ServerState, onCloseRequ
 
 
 
-class StatisticsState(serverState: ServerState) {
+class StatisticsState() {
     data class ProjectData(val name: String, val openEpoch: Long, val closeEpoch: Long = openEpoch)
 
-    val projectList = mutableStateMapOf<Long, ProjectData>()
-    var originEpoch: Long? = null
-    val statisticsDAO = StatisticsDAO()
+    private val projectList = mutableStateMapOf<Long, ProjectData>()
+    private var originEpoch: Long? = null
+    private val statisticsDAO = StatisticsDAO()
 
     init {
-        serverState.server.onEventReceive { event, id ->
+        server.onEventReceive { event, id ->
             when (event) {
                 Event.CloseProject -> {
                     val delta = System.currentTimeMillis() - (originEpoch ?: return@onEventReceive)
@@ -250,7 +247,7 @@ class StatisticsState(serverState: ServerState) {
     var imageBitmap by mutableStateOf(ImageBitmap.Blank)
 
 
-    suspend fun applyUpTime(delta: Long) {
+    private suspend fun applyUpTime(delta: Long) {
         println("Adding $delta ms")
         statisticsDAO.addUptime(delta, today)
     }
@@ -258,10 +255,10 @@ class StatisticsState(serverState: ServerState) {
         totalDatePeriod=getTotalDatePeriod()
         imageBitmap=generateBitmapImage()
     }
-    suspend fun getTotalDatePeriod(): DateTimePeriod {
+    private suspend fun getTotalDatePeriod(): DateTimePeriod {
         return statisticsDAO.getTotalTime().milliseconds.toDateTimePeriod()
     }
-    suspend fun generateBitmapImage(): ImageBitmap {
+    private suspend fun generateBitmapImage(): ImageBitmap {
         return plot(totalTimeUntil()) {
 
             x("日付"<String>()) {
@@ -284,7 +281,7 @@ class StatisticsState(serverState: ServerState) {
         }.toBufferedImage().toComposeImageBitmap()
     }
 
-    suspend fun totalTimeUntil(): Map<String, List<Any>> {
+    private suspend fun totalTimeUntil(): Map<String, List<Any>> {
         val l = statisticsDAO.totalTimeUntil(today.minus(7, DateTimeUnit.DAY), today)
         return mapOf(
             "日付" to l.keys.map { "${it.year}/${it.monthNumber}/${it.dayOfMonth}" },
@@ -296,7 +293,7 @@ class StatisticsState(serverState: ServerState) {
 }
 
 @Composable
-fun rememberStatisticsState(serverState: ServerState) = remember { StatisticsState(serverState) }
+fun rememberStatisticsState() = remember { StatisticsState() }
 val timezone = TimeZone.currentSystemDefault()
 val today get() = Clock.System.now().toLocalDateTime(timezone).date
 
