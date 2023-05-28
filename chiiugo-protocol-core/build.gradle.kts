@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.targets.js.npm.PackageJson
+import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinPackageJsonTask
+
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
@@ -26,7 +29,6 @@ kotlin {
         nodejs {
 
         }
-        this.binaries
         generateTypeScriptDefinitions()
     }
     sourceSets{
