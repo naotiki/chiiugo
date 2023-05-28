@@ -1,5 +1,6 @@
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.onDrag
 import androidx.compose.foundation.layout.*
@@ -194,7 +195,11 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
                             var spawnCount by remember(configState.spawnCount) { mutableStateOf(configState.spawnCount) }
                             Row(Modifier, verticalAlignment = Alignment.CenterVertically) {
                                 Text("ちぃうごの数\n$spawnCount")
-                                Slider(spawnCount.toFloat(),{spawnCount= it.roundToInt() }, valueRange = 1f..100f, steps = 100)
+                                TooltipArea({
+                                    Text("大きな数にすると最悪詰みます")
+                                }){
+                                    Slider(spawnCount.toFloat(),{spawnCount= it.roundToInt() }, valueRange = 1f..100f, steps = 100)
+                                }
                             }
                             Row (Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.spacedBy(5.dp,Alignment.End)){
                                 Button({
