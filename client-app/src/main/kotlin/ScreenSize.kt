@@ -23,5 +23,5 @@ class ScreenSize(density: Density){
 fun rememberScreenSize(): ScreenSize {
     val density = LocalDensity.current
 
-    return remember(density) {println(density.density); ScreenSize(density) }
+    return remember(density) {ScreenSize(density) }
 }

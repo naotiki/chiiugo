@@ -80,7 +80,6 @@ class Server(val port: Int=PORT) {
                 flush()
             }
             socket.close()
-
             callbacks.forEach { coroutineScope.launch { it(Event.CloseProject,id) } }
             super.interrupt()
         }
