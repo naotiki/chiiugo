@@ -8,7 +8,7 @@ import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
 
-class Server(val port: Int=PORT) {
+class SocketServer(val port: Int=PORT) {
     val serverSocket = ServerSocket(port)
 
     suspend fun runServer()= withContext(Dispatchers.IO){
@@ -17,7 +17,9 @@ class Server(val port: Int=PORT) {
             runCatching {
                 while (it.isActive){
                     val socket=serverSocket.accept()
-                    ServerThread(socket).start()
+                    serverThreads+=ServerThread(socket).apply {
+                        start()
+                    }
                 }
             }.onFailure { throwable ->
                 if (throwable is SocketException){
@@ -33,10 +35,16 @@ class Server(val port: Int=PORT) {
     fun onEventReceive( block:suspend (event:Event,id:Long)->Unit){
         callbacks.add(block)
     }
+    val serverThreads= mutableListOf<ServerThread>()
+    fun stop() {
+        serverThreads.forEach { it.interrupt() }
+        serverSocket.close()
+    }
+
     val coroutineScope= CoroutineScope(Dispatchers.Default)
     inner class ServerThread(private val socket: Socket) : Thread() {
         var timeoutJob:Job=timeout(TIMEOUT){
-            socket.close()
+            interrupt()
         }
         @OptIn(ExperimentalSerializationApi::class)
         override fun run() {
@@ -91,6 +99,6 @@ const val TIMEOUT:Long=5000*60
 
 private fun main() {
     runBlocking {
-        Server().runServer()
+        SocketServer().runServer()
     }
 }

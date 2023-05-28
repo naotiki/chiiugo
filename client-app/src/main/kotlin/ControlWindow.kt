@@ -26,7 +26,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.datetime.*
 import org.jetbrains.compose.animatedimage.Blank
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.kotlinx.kandy.dsl.invoke
 import org.jetbrains.kotlinx.kandy.dsl.plot
@@ -42,9 +41,9 @@ const val areaScale = 300
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalResourceApi::class)
 @Composable
-fun ControlWindow(visible: Boolean = true, serverState: ServerState, onCloseRequest: () -> Unit, selectedTab: Int) {
-    val statisticsState = rememberStatisticsState(serverState)
-    Window(onCloseRequest = onCloseRequest, visible = visible, icon = painterResource("SUCIcon.png")) {
+fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selectedTab: Int) {
+    val statisticsState = rememberStatisticsState()
+    Window(onCloseRequest = onCloseRequest, visible = visible) {
         Surface {
             val screenSize = rememberScreenSize()
 
@@ -100,7 +99,7 @@ fun ControlWindow(visible: Boolean = true, serverState: ServerState, onCloseRequ
 
                         1 -> {
                             val coroutineScope = rememberCoroutineScope()
-                            val configState by ConfigManager.configState.collectAsState()
+                            val configState by ConfigManager.configStateFlow.collectAsState()
                             Text("領域設定", Modifier, fontSize = 25.sp)
                             val offset =
                                 remember {
@@ -214,7 +213,7 @@ fun ControlWindow(visible: Boolean = true, serverState: ServerState, onCloseRequ
 
 
 
-class StatisticsState(serverState: ServerState) {
+class StatisticsState() {
     data class ProjectData(val name: String, val openEpoch: Long, val closeEpoch: Long = openEpoch)
 
     private val projectList = mutableStateMapOf<Long, ProjectData>()
@@ -222,7 +221,7 @@ class StatisticsState(serverState: ServerState) {
     private val statisticsDAO = StatisticsDAO()
 
     init {
-        serverState.server.onEventReceive { event, id ->
+        server.onEventReceive { event, id ->
             when (event) {
                 Event.CloseProject -> {
                     val delta = System.currentTimeMillis() - (originEpoch ?: return@onEventReceive)
@@ -294,7 +293,7 @@ class StatisticsState(serverState: ServerState) {
 }
 
 @Composable
-fun rememberStatisticsState(serverState: ServerState) = remember { StatisticsState(serverState) }
+fun rememberStatisticsState() = remember { StatisticsState() }
 val timezone = TimeZone.currentSystemDefault()
 val today get() = Clock.System.now().toLocalDateTime(timezone).date
 
