@@ -2,7 +2,6 @@ import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.project.Project
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromByteArray
@@ -16,8 +15,8 @@ import java.net.UnknownHostException
 class SocketService : Disposable {
     private var coroutineScope = CoroutineScope(Dispatchers.IO)
     private var socket: Socket? = null
-    private val notificationGroup = NotificationGroupManager.getInstance()
-        .getNotificationGroup("SUC-Notification")
+    private val notificationGroup by lazy { NotificationGroupManager.getInstance()
+        .getNotificationGroup("SUC-Notification") }
     val connecting get() = socket?.isConnected == true && socket?.isClosed == false
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -52,7 +51,7 @@ class SocketService : Disposable {
                     }
                 }
             }
-            sendData(ServerProtocol.Hello, null)
+            sendData(ServerProtocol.Hello)
         }.fold({
             it != null
         }, {
@@ -64,7 +63,7 @@ class SocketService : Disposable {
     }
 
     private val outputStream get() = socket!!.getOutputStream()
-    fun sendData(serverProtocol: ServerProtocol, project: Project?): Job? {
+    fun sendData(serverProtocol: ServerProtocol): Job? {
         if (socket == null) {
             return null
         }
@@ -79,15 +78,15 @@ class SocketService : Disposable {
 
 
     suspend fun closeServer() {
-        coroutineScope.cancel()
-        coroutineScope = CoroutineScope(Dispatchers.IO)
         if (connecting) {
-            withTimeout(1000) {
-                coroutineScope.launch {
-                    sendData(ServerProtocol.End, null)?.join()
+            withTimeoutOrNull(1000) {
+                launch {
+                    sendData(ServerProtocol.End)?.join()
                 }.join()
             }
         }
+        coroutineScope.cancel()
+        coroutineScope = CoroutineScope(Dispatchers.IO)
         socket?.close()
         socket = null
     }

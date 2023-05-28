@@ -27,7 +27,7 @@ class MyListener(val project: Project) : ExecutionListener {
         socketService.sendData(
             SendEvent(
                 Event.StartBuild(executorId)
-            ), project
+            )
         )
 
     }
@@ -36,7 +36,7 @@ class MyListener(val project: Project) : ExecutionListener {
         socketService.sendData(
             SendEvent(
                 Event.FailedBuild(executorId)
-            ), project
+            )
         )
     }
 
@@ -52,7 +52,7 @@ class MyListener(val project: Project) : ExecutionListener {
                 if (exitCode == 0)
                     Event.SuccessBuild(executorId)
                 else Event.FailedBuild(executorId)
-            ), project
+            )
         )
     }
 
@@ -66,7 +66,7 @@ class SUCTypedHandler : TypedHandlerDelegate() {
         socket.sendData(
             SendEvent(
                 Event.Typed(c)
-            ), project
+            )
         )
         return super.charTyped(c, project, editor, file)
     }
@@ -87,7 +87,7 @@ class ProjectStartupActivity : StartupActivity, ProjectManagerListener {
         .getService(SocketService::class.java)
 
     override fun projectClosed(project: Project) {
-        socketService.sendData(SendEvent(Event.CloseProject),project)
+        socketService.sendData(SendEvent(Event.CloseProject))
     }
 
     override fun runActivity(project: Project) {
@@ -98,7 +98,7 @@ class ProjectStartupActivity : StartupActivity, ProjectManagerListener {
         socketService.sendData(
             SendEvent(
                 Event.OpenProject(project.name)
-            ), project
+            )
         )
         println("Server Started : $socketService")
     }
