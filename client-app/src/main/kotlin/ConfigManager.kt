@@ -1,16 +1,18 @@
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.File
+
 val ConfigJson= Json {
+    prettyPrint=true
     encodeDefaults=true
 }
 object ConfigManager {
-    const val CONFIG_PATH = "SucConfig.json"
+    const val CONFIG_PATH = "ChiiugoConf.json"
     val configFile  = File(CONFIG_PATH)
-    val configState = MutableStateFlow(loadDataOrDefault())
+    val configStateFlow = MutableStateFlow(loadDataOrDefault())
+    val conf get() = configStateFlow.value
     fun loadDataOrDefault(): ConfigData {
         return configFile.takeIf { it.exists() }?.readText()?.let {
             ConfigJson.decodeFromString<ConfigData>(it)
@@ -21,9 +23,9 @@ object ConfigManager {
     }
 
     suspend inline fun apply(configData: ConfigData.() -> Unit) {
-        val c = configState.value.copy()
+        val c = configStateFlow.value.copy()
         c.configData()
-        configState.emit(c)
+        configStateFlow.emit(c)
         configFile.writeText(ConfigJson.encodeToString(ConfigData.serializer(), c))
     }
 }
@@ -32,5 +34,6 @@ object ConfigManager {
 data class ConfigData(
     var areaSize: Pair<Float, Float> = 0.8f to 0.8f,
     var areaOffset: Pair<Float, Float> = 0f to 0f,
-    var alwaysTop:Boolean=true
+    var alwaysTop:Boolean=true,
+    var imageSize:Float=imageSizeDp.value,
 )
