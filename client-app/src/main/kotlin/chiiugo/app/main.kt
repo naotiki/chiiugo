@@ -1,3 +1,6 @@
+package chiiugo.app
+
+import SocketServer
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -7,17 +10,13 @@ import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
-import data.DatabaseFactory
+import chiiugo.app.data.DatabaseFactory
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.skiko.GpuPriority
-import org.jetbrains.skiko.GraphicsApi
 import kotlin.random.Random
 
 val colorList =
@@ -26,7 +25,7 @@ val server by lazy { SocketServer() }
 
 @OptIn(ExperimentalResourceApi::class, ExperimentalComposeUiApi::class)
 fun main() {
-    val graphicsData=ConfigManager.conf.graphics
+    val graphicsData= ConfigManager.conf.graphics
     System.setProperty("skiko.renderApi",graphicsData.renderApi)
     System.setProperty("skiko.fps.enabled",graphicsData.fps.toString())
     System.setProperty("skiko.vsync.enabled",graphicsData.vsync.toString())
@@ -43,7 +42,7 @@ fun main() {
         }
 
         var exitCount by remember { mutableStateOf(0) }
-        val screenSize=rememberScreenSize()
+        val screenSize= rememberScreenSize()
         //Windowを表示
         repeat(configState.spawnCount){
             Mascot(screenSize,configState)

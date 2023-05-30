@@ -1,3 +1,5 @@
+package chiiugo.app
+
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
@@ -23,5 +25,5 @@ class ScreenSize(density: Density){
 fun rememberScreenSize(): ScreenSize {
     val density = LocalDensity.current
 
-    return remember(density) {ScreenSize(density) }
+    return remember(density) { ScreenSize(density) }
 }

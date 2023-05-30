@@ -1,3 +1,5 @@
+package chiiugo.app
+
 import androidx.compose.animation.core.AnimationVector2D
 import androidx.compose.animation.core.TwoWayConverter
 import androidx.compose.ui.unit.dp

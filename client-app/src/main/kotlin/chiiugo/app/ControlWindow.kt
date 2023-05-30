@@ -1,3 +1,7 @@
+package chiiugo.app
+
+import Event
+import SocketProtocol
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.TooltipArea
@@ -18,9 +22,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Window
-import data.DailyStatistic
-import data.DailyStatistics
-import data.dbQuery
+import chiiugo.app.data.DailyStatistic
+import chiiugo.app.data.DailyStatistics
+import chiiugo.app.data.dbQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
