@@ -36,16 +36,22 @@ data class FileTypeData(val idName:String, val displayName:String, val fileTypeE
 
 sealed class ServerProtocol{
     @Serializable
-    object Hello: ServerProtocol()
+    data class Hello(val clientData: ClientData) : ServerProtocol()
     @Serializable
     data class SendEvent(val event:Event): ServerProtocol()
     @Serializable
     object End: ServerProtocol()
     @Serializable
     object Error: ServerProtocol()
+
+    @Serializable
+    object Ping:ServerProtocol()
 }//d.ts generatorでバグるのでclass
-
-
+@Serializable
+data class ClientData(
+    val clientName:String,
+    val version:String,
+)
 
 @OptIn(ExperimentalSerializationApi::class)
 fun <T:ServerProtocol> convertByteArray(serverProtocol: T): ByteArray {

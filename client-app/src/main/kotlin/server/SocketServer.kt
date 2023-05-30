@@ -1,4 +1,8 @@
 import ServerProtocol.SendEvent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromByteArray
@@ -35,16 +39,17 @@ class SocketServer(val port: Int=PORT) {
     fun onEventReceive( block:suspend (event:Event,id:Long)->Unit){
         callbacks.add(block)
     }
-    val serverThreads= mutableListOf<ServerThread>()
+    val serverThreads= mutableStateListOf<ServerThread>()
     fun stop() {
-        serverThreads.forEach { it.interrupt() }
+        serverThreads.forEach { it.close() }
         serverSocket.close()
     }
 
     val coroutineScope= CoroutineScope(Dispatchers.Default)
     inner class ServerThread(private val socket: Socket) : Thread() {
+        var clientData by mutableStateOf(ClientData("Unknown","Unknown"))
         var timeoutJob:Job=timeout(TIMEOUT){
-            interrupt()
+            close()
         }
         @OptIn(ExperimentalSerializationApi::class)
         override fun run() {
@@ -56,15 +61,23 @@ class SocketServer(val port: Int=PORT) {
                     val size =sin.readInt()
                     print("Size=$size:")
                     val data=ProtoBuf.decodeFromByteArray<ServerProtocol>(sin.readNBytes(size))
-                    if (data is SendEvent){
+                    when (data) {
+                        is SendEvent -> {
+                            callbacks.forEach { coroutineScope.launch { it(data.event,id) } }
+                        }
 
-                        callbacks.forEach { coroutineScope.launch { it(data.event,id) } }
-                    }else if(data is ServerProtocol.End){
-                        interrupt()
+                        is ServerProtocol.End -> {
+                            close()
+                        }
+
+                        is ServerProtocol.Hello -> {
+                            clientData=data.clientData
+                        }
+                        else -> {}
                     }
                     timeoutJob.cancel()
                     timeoutJob=timeout(TIMEOUT){
-                        socket.close()
+                        close()
                     }
                     println(data)
                 }
@@ -80,8 +93,13 @@ class SocketServer(val port: Int=PORT) {
                 block()
             }
         }
-
-        override fun interrupt() {
+        fun send(serverProtocol: ServerProtocol){
+            socket.getOutputStream().apply {
+                write(convertByteArray(serverProtocol))
+                flush()
+            }
+        }
+        fun close(){
             timeoutJob.cancel()
             socket.getOutputStream().apply {
                 write(convertByteArray(ServerProtocol.End))
@@ -89,6 +107,10 @@ class SocketServer(val port: Int=PORT) {
             }
             socket.close()
             callbacks.forEach { coroutineScope.launch { it(Event.CloseProject,id) } }
+            serverThreads.remove(this)
+        }
+        override fun interrupt() {
+            close()
             super.interrupt()
         }
     }

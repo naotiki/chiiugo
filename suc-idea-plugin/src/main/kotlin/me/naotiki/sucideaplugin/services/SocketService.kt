@@ -10,7 +10,7 @@ import java.io.DataInputStream
 import java.io.IOException
 import java.net.Socket
 import java.net.UnknownHostException
-
+val clientData=ClientData("IntelliJ IDEA","v0")
 @Service
 class SocketService : Disposable {
     private var coroutineScope = CoroutineScope(Dispatchers.IO)
@@ -51,7 +51,7 @@ class SocketService : Disposable {
                     }
                 }
             }
-            sendData(ServerProtocol.Hello)
+            sendData(ServerProtocol.Hello(clientData))
         }.fold({
             it != null
         }, {
