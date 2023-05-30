@@ -96,11 +96,13 @@ class SocketServer(val port: Int=PORT) {
         fun send(socketProtocol: SocketProtocol){
             if (socket.isClosed||!socket.isConnected)return
             coroutineScope.launch {
-                withContext(Dispatchers.IO) {
-                    runCatching {
-                        socket.getOutputStream().apply {
-                            write(convertByteArray(socketProtocol))
-                            flush()
+                runCatching {
+                    withTimeout(1000){
+                        withContext(Dispatchers.IO) {
+                            socket.getOutputStream().apply {
+                                write(convertByteArray(socketProtocol))
+                                flush()
+                            }
                         }
                     }
                 }
