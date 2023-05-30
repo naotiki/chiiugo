@@ -23,7 +23,7 @@ class PopupDialogAction : AnAction() {
             val project=e.project
             if (project!=null){
                 server.sendData(
-                    ServerProtocol.SendEvent(
+                    SocketProtocol.SendEvent(
                         Event.OpenProject(project.name)
                     )
                 )
