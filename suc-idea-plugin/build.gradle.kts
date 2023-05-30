@@ -11,7 +11,7 @@ plugins {
 val publishProperties=Properties()
 publishProperties.load(file("publish.properties").bufferedReader())
 group = "me.naotiki"
-version = "1.0-SNAPSHOT6"
+version = "1.0-SNAPSHOT7"
 sourceSets{
     kotlin{
         main{
