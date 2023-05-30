@@ -1,3 +1,4 @@
+import ConfigManager.conf
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.TooltipArea
@@ -45,6 +46,7 @@ const val areaScale = 300
 @Composable
 fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selectedTab: Int) {
     val statisticsState = rememberStatisticsState()
+    val configState by ConfigManager.configStateFlow.collectAsState()
     Window(onCloseRequest = onCloseRequest, visible = visible) {
         Surface {
             val screenSize = rememberScreenSize()
@@ -62,6 +64,13 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
                         selectedTabIndex = 1
                     }) {
                         Text("設定")
+                    }
+                    if (configState.debug.enable) {
+                        Tab(selectedTabIndex == 2, {
+                            selectedTabIndex = 2
+                        }) {
+                            Text("デバッグ")
+                        }
                     }
                 }
                 Column(
@@ -101,7 +110,6 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
 
                         1 -> {
                             val coroutineScope = rememberCoroutineScope()
-                            val configState by ConfigManager.configStateFlow.collectAsState()
                             Text("領域設定", Modifier, fontSize = 25.sp)
                             val offset =
                                 remember(screenSize.density) {
@@ -225,6 +233,20 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
                                     }
                                 }, ) {
                                     Text("適用")
+                                }
+                            }
+
+                        }
+                        2->{
+                            Text("接続中のクライアント")
+                            server.serverThreads.forEach {
+                                Column {
+                                   Row {
+                                       Text( it.clientData.toString())
+                                       Button({it.send(ServerProtocol.Ping)}){
+                                           Text("Ping!!!!")
+                                       }
+                                   }
                                 }
                             }
 

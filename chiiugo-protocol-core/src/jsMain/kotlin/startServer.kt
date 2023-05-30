@@ -7,14 +7,15 @@ import node.net.Socket
 import node.net.connect
 
 
-class Client{
+class Client(val clientData: ClientData){
     val socket:Socket = connect(PORT, "localhost") {
         console.log("Connected")
+        send(ServerProtocol.Hello(clientData))
     }
     init {
-        socket.on(Event.DATA){
+        socket.on(Event.DATA){data:Buffer->
             console.log("Received DATA")
-            console.dir(it)
+            console.log(data)
         }
     }
     fun send(v: ServerProtocol) {
