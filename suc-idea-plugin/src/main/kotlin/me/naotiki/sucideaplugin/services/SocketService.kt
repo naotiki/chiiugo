@@ -35,8 +35,8 @@ class SocketService : Disposable {
                     if (dataInputStream.available() >= HeaderSize) {
                         val dataLength = dataInputStream.readInt()
                         val byteData = dataInputStream.readNBytes(dataLength)
-                        when (val e=ProtoBuf.decodeFromByteArray<ServerProtocol>(byteData)) {
-                            ServerProtocol.End -> {
+                        when (val e=ProtoBuf.decodeFromByteArray<SocketProtocol>(byteData)) {
+                            SocketProtocol.End -> {
                                 closeServer()
                             }
 
@@ -51,7 +51,7 @@ class SocketService : Disposable {
                     }
                 }
             }
-            sendData(ServerProtocol.Hello(clientData))
+            sendData(SocketProtocol.Hello(clientData))
         }.fold({
             it != null
         }, {
@@ -63,14 +63,14 @@ class SocketService : Disposable {
     }
 
     private val outputStream get() = socket!!.getOutputStream()
-    fun sendData(serverProtocol: ServerProtocol): Job? {
+    fun sendData(socketProtocol: SocketProtocol): Job? {
         if (socket == null) {
             return null
         }
-        println("[Debug] Send: $serverProtocol")
+        println("[Debug] Send: $socketProtocol")
         return coroutineScope.launch {
             withContext(Dispatchers.IO) {
-                outputStream.write(convertByteArray(serverProtocol))
+                outputStream.write(convertByteArray(socketProtocol))
                 outputStream.flush()
             }
         }
@@ -81,7 +81,7 @@ class SocketService : Disposable {
         if (connecting) {
             withTimeoutOrNull(1000) {
                 launch {
-                    sendData(ServerProtocol.End)?.join()
+                    sendData(SocketProtocol.End)?.join()
                 }.join()
             }
         }

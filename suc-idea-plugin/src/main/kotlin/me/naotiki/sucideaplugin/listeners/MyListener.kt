@@ -1,7 +1,7 @@
 package me.naotiki.sucideaplugin.listeners
 
 import Event
-import ServerProtocol.SendEvent
+import SocketProtocol.SendEvent
 import SocketService
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
 import com.intellij.execution.ExecutionListener
