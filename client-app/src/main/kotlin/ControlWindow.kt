@@ -242,8 +242,9 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
                             server.serverThreads.forEach {
                                 Column {
                                    Row {
+                                       Text("POrt:${it.socket.port}")
                                        Text( it.clientData.toString())
-                                       Button({it.send(ServerProtocol.Ping)}){
+                                       Button({it.send(SocketProtocol.Ping)}){
                                            Text("Ping!!!!")
                                        }
                                    }

@@ -1,4 +1,3 @@
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,34 +12,33 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.rememberDialogState
 import androidx.compose.ui.window.rememberWindowState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.animatedimage.Blank
 import org.jetbrains.compose.animatedimage.animate
 import org.jetbrains.compose.animatedimage.loadResourceAnimatedImage
 import org.jetbrains.compose.resources.loadOrNull
-import org.jetbrains.kotlinx.kandy.dsl.invoke
+import java.awt.event.WindowEvent
+import java.awt.event.WindowFocusListener
 
 @Composable
-fun Mascot(screenSize: ScreenSize,configData: ConfigData){
+fun Mascot(screenSize: ScreenSize, configData: ConfigData) {
     val mascotState = rememberMascotState(screenSize)
-    val windowState = rememberWindowState(size = DpSize.Unspecified, position =mascotState.windowsPosState)
-    LaunchedEffect(Unit){
+    val windowState = rememberWindowState(size = DpSize.Unspecified, position = mascotState.windowsPosState)
+    LaunchedEffect(Unit) {
         launch {
             mascotState.loop()
         }
     }
-    LaunchedEffect(configData.imageSize){
-        windowState.size=DpSize.Unspecified
+    LaunchedEffect(configData.imageSize) {
+        windowState.size = DpSize.Unspecified
     }
     //画面スケール変更時
-    val size= remember(windowState.size.isSpecified) { windowState.size }
-    LaunchedEffect(windowState.size){
-        if (windowState.size!=size)
-            windowState.size= DpSize.Unspecified
+    val size = remember(windowState.size.isSpecified) { windowState.size }
+    LaunchedEffect(windowState.size) {
+        if (windowState.size != size)
+            windowState.size = DpSize.Unspecified
     }
 
 
@@ -57,7 +55,7 @@ fun Mascot(screenSize: ScreenSize,configData: ConfigData){
         resizable = false,
         transparent = true,
         undecorated = true,
-        alwaysOnTop = configData.alwaysTop
+        alwaysOnTop = configData.alwaysTop,
     ) {
 
         Box(modifier = Modifier) {
@@ -67,12 +65,16 @@ fun Mascot(screenSize: ScreenSize,configData: ConfigData){
                     loadResourceAnimatedImage(mascotState.gifName)
                 }?.animate() ?: ImageBitmap.Blank,
                 null,
-                Modifier.size(configData.imageSize.dp), colorFilter = ColorFilter.tint(mascotState.colorState, BlendMode.Modulate),
+                Modifier.size(configData.imageSize.dp),
+                colorFilter = ColorFilter.tint(mascotState.colorState, BlendMode.Modulate),
             )
             val serif by mascotState.serifFlow.collectAsState()
 
             Box(
-                modifier = Modifier.padding(start = configData.imageSize.dp-(configData.imageSize.dp*0.05f), top = (configData.imageSize.dp*0.05f)).width(150.dp)
+                modifier = Modifier.padding(
+                    start = configData.imageSize.dp - (configData.imageSize.dp * 0.05f),
+                    top = (configData.imageSize.dp * 0.05f)
+                ).width(150.dp)
             ) {
                 if (serif != null) {
                     Text(
