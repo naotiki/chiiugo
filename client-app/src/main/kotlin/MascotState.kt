@@ -69,48 +69,48 @@ val defaultBehaviour:BehaviourFunc={
     }
 }
 typealias BehaviourFunc=suspend MascotState.()->Unit
-class MascotState(private val screenSize: ScreenSize,val coroutine: CoroutineScope) {
+class MascotState(private val screenSize: ScreenSize,) {
     private var behaviourFunc:BehaviourFunc?=null
     private var behaviourJob:Job? = null
     //Composition対応Coroutineスコープ内で実行
-    suspend fun loop(){
+    suspend fun loop() {
         coroutineScope {
-            while (true){
-                gifName="SUC.gif"
+            server.onEventReceive {e,_->
+                println("Event Receive:$e")
+                when (e) {
+                    is Event.FailedBuild -> {
+                        changeBehaviour {
+                            gifName = "boom.gif"
+                            say("ビルド ${e.buildId} 失敗！", 5000, true)?.join()
+                        }
+                    }
+                    is Event.OpenProject -> {
+                        say("プロジェクト ${e.projectName} を開きました！", 5000, true)
+                    }
+                    is Event.StartBuild -> {
+                        say("ビルド ${e.buildId} を実行中", 5000, true)
+                    }
+                    is Event.SuccessBuild -> {
+                        say( "ビルド ${e.buildId} 成功！", 5000, true)
+                    }
+                    is Event.Typed -> {
+                        this@coroutineScope.launch {
+                            feed(e.char)
+                        }
+                    }
+                    else->{}
+                }
+            }
+            while (true) {
+                gifName = "SUC.gif"
                 color.snapTo(Color.White)
-                val f=behaviourFunc
-                behaviourFunc=null
-                behaviourJob=launch {
-                    (f?:defaultBehaviour).invoke(this@MascotState)
+                val f = behaviourFunc
+                behaviourFunc = null
+                behaviourJob = launch {
+                    (f ?: defaultBehaviour).invoke(this@MascotState)
                 }
                 behaviourJob?.join()
                 yield()
-            }
-        }
-    }
-    init {
-        server.onEventReceive {e,_->
-            println("Event Receive:$e")
-            when (e) {
-                is Event.FailedBuild -> {
-                    changeBehaviour {
-                        gifName = "boom.gif"
-                        say("ビルド ${e.buildId} 失敗！", 5000, true)?.join()
-                    }
-                }
-                is Event.OpenProject -> {
-                    say("プロジェクト ${e.projectName} を開きました！", 5000, true)
-                }
-                is Event.StartBuild -> {
-                    say("ビルド ${e.buildId} を実行中", 5000, true)
-                }
-                is Event.SuccessBuild -> {
-                    say( "ビルド ${e.buildId} 成功！", 5000, true)
-                }
-                is Event.Typed -> {
-                    feed(e.char)
-                }
-                else->{}
             }
         }
     }
@@ -120,7 +120,7 @@ class MascotState(private val screenSize: ScreenSize,val coroutine: CoroutineSco
     private val serif = MutableStateFlow<String?>(null)
     val serifFlow = serif.asStateFlow()
     suspend fun say(string: String, delayMillis: Long, important: Boolean = false): Job? {
-        println("Say $important ${serif.value}→ $string")
+        //println("Say $important ${serif.value}→ $string")
         if (important) {
             serif.emit(string)
         } else if (serif.value == null) {
@@ -184,20 +184,22 @@ class MascotState(private val screenSize: ScreenSize,val coroutine: CoroutineSco
     val charMap =  mutableStateListOf<Pair<Char, Pair<Int, Animatable<Float, AnimationVector1D>>>>()
 
     suspend fun feed(char: Char) {
+        if (!char.isLetterOrDigit()||charMap.size>1000)return
         val anim = Animatable(0f)
         val e = char to (Random.nextInt(ConfigManager.conf.imageSize.roundToInt()) to anim)
         charMap.add(e)
-        coroutine.launch {
-            anim.animateTo(ConfigManager.conf.imageSize - 10, tween(2000, easing = EaseOutBounce))
-            delay(Random.nextLong(500, 2000))
-            charMap.remove(e)
+        coroutineScope {
+            launch {
+                anim.animateTo(ConfigManager.conf.imageSize - 10, tween(2000, easing = EaseOutBounce))
+                delay(Random.nextLong(500, 2000))
+                charMap.remove(e)
+            }
         }
     }
 }
 @Composable
 fun rememberMascotState(screenSize: ScreenSize):MascotState {
-    val coroutine= rememberCoroutineScope()
-    return remember(screenSize) { MascotState(screenSize,coroutine) }
+    return remember(screenSize) { MascotState(screenSize) }
 }
 val texts = arrayOf(
     "優雅に雑音を聞く生活もいいかもしれないよ",

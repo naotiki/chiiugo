@@ -43,8 +43,9 @@ const val areaScale = 300
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalResourceApi::class)
 @Composable
-fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selectedTab: Int) {
+fun ControlWindow(visible: Boolean = true, onCloseRequest: () -> Unit, selectedTab: Int) {
     val statisticsState = rememberStatisticsState()
+    val configState by ConfigManager.configStateFlow.collectAsState()
     Window(onCloseRequest = onCloseRequest, visible = visible) {
         Surface {
             val screenSize = rememberScreenSize()
@@ -62,6 +63,13 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
                         selectedTabIndex = 1
                     }) {
                         Text("設定")
+                    }
+                    if (configState.debug.enable) {
+                        Tab(selectedTabIndex == 2, {
+                            selectedTabIndex = 2
+                        }) {
+                            Text("デバッグ")
+                        }
                     }
                 }
                 Column(
@@ -82,7 +90,7 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
                             Text("累計プログラミング時間", Modifier.padding(10.dp), fontSize = 25.sp)
 
                             LaunchedEffect(Unit) {
-                                withContext(Dispatchers.IO){
+                                withContext(Dispatchers.IO) {
                                     launch {
                                         statisticsState.syncDate()
                                     }
@@ -101,7 +109,6 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
 
                         1 -> {
                             val coroutineScope = rememberCoroutineScope()
-                            val configState by ConfigManager.configStateFlow.collectAsState()
                             Text("領域設定", Modifier, fontSize = 25.sp)
                             val offset =
                                 remember(screenSize.density) {
@@ -190,44 +197,73 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
                             var imageSize by remember(configState.imageSize) { mutableStateOf(configState.imageSize) }
                             Row(Modifier, verticalAlignment = Alignment.CenterVertically) {
                                 Text("画像の大きさ\n${imageSize.roundToInt()} dp")
-                                Slider(imageSize,{imageSize=it}, valueRange = 1f..350f)
+                                Slider(imageSize, { imageSize = it }, valueRange = 1f..350f)
                             }
                             var spawnCount by remember(configState.spawnCount) { mutableStateOf(configState.spawnCount) }
                             Row(Modifier, verticalAlignment = Alignment.CenterVertically) {
                                 Text("ちぃうごの数\n$spawnCount")
                                 TooltipArea({
                                     Text("大きな数にすると最悪詰みます")
-                                }){
-                                    Slider(spawnCount.toFloat(),{spawnCount= it.roundToInt() }, valueRange = 1f..100f, steps = 100)
+                                }) {
+                                    Slider(
+                                        spawnCount.toFloat(),
+                                        { spawnCount = it.roundToInt() },
+                                        valueRange = 1f..100f,
+                                        steps = 100
+                                    )
                                 }
                             }
-                            Row (Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.spacedBy(5.dp,Alignment.End)){
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(60.dp, Alignment.End)
+                            ) {
                                 Button({
                                     coroutineScope.launch {
-                                        ConfigManager.apply(ConfigData())
+                                        ConfigManager.apply(
+                                            ConfigData(
+                                                graphics = configState.graphics,
+                                                debug = configState.debug
+                                            )
+                                        )
                                     }
-                                }, ) {
-                                    Text("リセット")
+                                }, colors = ButtonDefaults.outlinedButtonColors()) {
+                                    Text("リセット＆適用")
                                 }
-                                Button({
-                                    coroutineScope.launch {
-                                        ConfigManager.apply {
-                                            this.areaOffset =
-                                                screenSize.toDp(areaOffset.x).value / areaScale to screenSize.toDp(
-                                                    areaOffset.y
-                                                ).value / (areaScale * (1 / screenSize.aspectRatio))
-                                            this.areaSize =
-                                                areaSize.width.value / areaScale to areaSize.height.value / (areaScale * (1 / screenSize.aspectRatio))
-                                            this.alwaysTop = alwaysTop
-                                            this.imageSize=imageSize
-                                            this.spawnCount=spawnCount
+                                Button(
+                                    {
+                                        coroutineScope.launch {
+                                            ConfigManager.apply {
+                                                this.areaOffset =
+                                                    screenSize.toDp(areaOffset.x).value / areaScale to screenSize.toDp(
+                                                        areaOffset.y
+                                                    ).value / (areaScale * (1 / screenSize.aspectRatio))
+                                                this.areaSize =
+                                                    areaSize.width.value / areaScale to areaSize.height.value / (areaScale * (1 / screenSize.aspectRatio))
+                                                this.alwaysTop = alwaysTop
+                                                this.imageSize = imageSize
+                                                this.spawnCount = spawnCount
+                                            }
                                         }
-                                    }
-                                }, ) {
+                                    },
+                                ) {
                                     Text("適用")
                                 }
                             }
 
+                        }
+
+                        2 -> {
+                            Text("接続中のクライアント")
+                            server.serverThreads.forEach {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(it.clientData.toString())
+                                    Text(" Port:${it.socket.port}")
+                                    Spacer(Modifier.weight(1f))
+                                    Button({ it.send(SocketProtocol.Ping) }) {
+                                        Text("Ping!")
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -235,8 +271,6 @@ fun ControlWindow(visible: Boolean = true,  onCloseRequest: () -> Unit, selected
         }
     }
 }
-
-
 
 
 class StatisticsState() {
@@ -269,6 +303,7 @@ class StatisticsState() {
             }
         }
     }
+
     var totalDatePeriod by mutableStateOf(DateTimePeriod())
     var imageBitmap by mutableStateOf(ImageBitmap.Blank)
 
@@ -277,13 +312,16 @@ class StatisticsState() {
         println("Adding $delta ms")
         statisticsDAO.addUptime(delta, today)
     }
-    suspend fun syncDate(){
-        totalDatePeriod=getTotalDatePeriod()
-        imageBitmap=generateBitmapImage()
+
+    suspend fun syncDate() {
+        totalDatePeriod = getTotalDatePeriod()
+        imageBitmap = generateBitmapImage()
     }
+
     private suspend fun getTotalDatePeriod(): DateTimePeriod {
         return statisticsDAO.getTotalTime().milliseconds.toDateTimePeriod()
     }
+
     private suspend fun generateBitmapImage(): ImageBitmap {
         return plot(totalTimeUntil()) {
 
@@ -342,7 +380,6 @@ class StatisticsDAO {
     }
 
     suspend fun totalTimeUntil(start: LocalDate, end: LocalDate) = dbQuery {
-
         DailyStatistic.find {
             DailyStatistics.date greaterEq start and (DailyStatistics.date lessEq end)
         }.reversed().associate { it.date to it.totalTime.milliseconds }

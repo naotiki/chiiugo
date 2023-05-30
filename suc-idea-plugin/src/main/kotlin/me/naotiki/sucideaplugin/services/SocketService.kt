@@ -10,7 +10,7 @@ import java.io.DataInputStream
 import java.io.IOException
 import java.net.Socket
 import java.net.UnknownHostException
-
+val clientData=ClientData("IntelliJ IDEA","v0")
 @Service
 class SocketService : Disposable {
     private var coroutineScope = CoroutineScope(Dispatchers.IO)
@@ -35,11 +35,14 @@ class SocketService : Disposable {
                     if (dataInputStream.available() >= HeaderSize) {
                         val dataLength = dataInputStream.readInt()
                         val byteData = dataInputStream.readNBytes(dataLength)
-                        when (val e=ProtoBuf.decodeFromByteArray<ServerProtocol>(byteData)) {
-                            ServerProtocol.End -> {
+                        when (val e=ProtoBuf.decodeFromByteArray<SocketProtocol>(byteData)) {
+                            SocketProtocol.End -> {
                                 closeServer()
                             }
-
+                            SocketProtocol.Ping->{
+                                notificationGroup.createNotification("Pong!", NotificationType.INFORMATION)
+                                    .notify(null)
+                            }
                             else -> {
                                 println(e)
                             }
@@ -51,7 +54,7 @@ class SocketService : Disposable {
                     }
                 }
             }
-            sendData(ServerProtocol.Hello)
+            sendData(SocketProtocol.Hello(clientData))
         }.fold({
             it != null
         }, {
@@ -63,14 +66,14 @@ class SocketService : Disposable {
     }
 
     private val outputStream get() = socket!!.getOutputStream()
-    fun sendData(serverProtocol: ServerProtocol): Job? {
+    fun sendData(socketProtocol: SocketProtocol): Job? {
         if (socket == null) {
             return null
         }
-        println("[Debug] Send: $serverProtocol")
+        println("[Debug] Send: $socketProtocol")
         return coroutineScope.launch {
             withContext(Dispatchers.IO) {
-                outputStream.write(convertByteArray(serverProtocol))
+                outputStream.write(convertByteArray(socketProtocol))
                 outputStream.flush()
             }
         }
@@ -81,7 +84,7 @@ class SocketService : Disposable {
         if (connecting) {
             withTimeoutOrNull(1000) {
                 launch {
-                    sendData(ServerProtocol.End)?.join()
+                    sendData(SocketProtocol.End)?.join()
                 }.join()
             }
         }
