@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "me.naotiki"
-version = "1.0-SNAPSHOT"
+version = "1.0-SNAPSHOT2"
 
 repositories {
     mavenCentral()
@@ -27,7 +27,9 @@ kotlin {
         binaries.executable()
 
         nodejs {
+this.runTask {
 
+}
         }
         generateTypeScriptDefinitions()
     }
@@ -36,8 +38,7 @@ kotlin {
            dependencies {
                //testImplementation(kotlin("test"))
                //implementation("org.jetbrains.kotlinx:kotlinx-nodejs:0.0.7")
-               implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
-               implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.5.1")
+               implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.5.1")
            }
 

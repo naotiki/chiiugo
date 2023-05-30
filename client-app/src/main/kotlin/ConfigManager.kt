@@ -2,6 +2,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import org.jetbrains.skiko.GpuPriority
 import java.io.File
 
 val ConfigJson= Json {
@@ -40,4 +41,17 @@ data class ConfigData(
     var alwaysTop: Boolean = true,
     var imageSize: Float = 175f,
     var spawnCount: Int = 1,
+    var graphics:GraphicsData=GraphicsData(),
+    var debug:DebugData=DebugData()
+)
+
+@Serializable
+data class DebugData(val enable:Boolean=false)
+
+@Serializable
+data class GraphicsData(
+    val vsync:Boolean=true,
+    val fps:Boolean=false,
+    val renderApi:String="",
+    val gpu:GpuPriority=GpuPriority.Auto
 )

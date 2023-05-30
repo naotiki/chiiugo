@@ -4,7 +4,6 @@
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.protobuf.ProtoBuf
 
 @Serializable
@@ -31,25 +30,29 @@ sealed class Event{
 @Serializable
 data class FileTypeData(val idName:String, val displayName:String, val fileTypeExtension: String)
 
-
 @Serializable
+sealed class SocketProtocol{
+    @Serializable
+    data class Hello(val clientData: ClientData) : SocketProtocol()
+    @Serializable
+    data class SendEvent(val event:Event): SocketProtocol()
+    @Serializable
+    object End: SocketProtocol()
+    @Serializable
+    object Error: SocketProtocol()
 
-sealed class ServerProtocol{
     @Serializable
-    object Hello: ServerProtocol()
-    @Serializable
-    data class SendEvent(val event:Event): ServerProtocol()
-    @Serializable
-    object End: ServerProtocol()
-    @Serializable
-    object Error: ServerProtocol()
+    object Ping: SocketProtocol()
 }//d.ts generatorでバグるのでclass
-
-
+@Serializable
+data class ClientData(
+    val clientName:String,
+    val version:String,
+)
 
 @OptIn(ExperimentalSerializationApi::class)
-fun <T:ServerProtocol> convertByteArray(serverProtocol: T): ByteArray {
-    return addHeader(ProtoBuf.encodeToByteArray(ServerProtocol.serializer(),serverProtocol))
+fun <T:SocketProtocol> convertByteArray(socketProtocol: T): ByteArray {
+    return addHeader(ProtoBuf.encodeToByteArray(SocketProtocol.serializer(),socketProtocol))
 }
 
 const val PORT=0xCAD

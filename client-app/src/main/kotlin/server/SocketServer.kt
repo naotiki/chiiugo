@@ -1,4 +1,8 @@
-import ServerProtocol.SendEvent
+import SocketProtocol.SendEvent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromByteArray
@@ -23,7 +27,7 @@ class SocketServer(val port: Int=PORT) {
                 }
             }.onFailure { throwable ->
                 if (throwable is SocketException){
-                    throwable.printStackTrace()
+                    println(throwable.toString())
                 }else throw throwable
             }
             println("Server Shutdown")
@@ -35,16 +39,17 @@ class SocketServer(val port: Int=PORT) {
     fun onEventReceive( block:suspend (event:Event,id:Long)->Unit){
         callbacks.add(block)
     }
-    val serverThreads= mutableListOf<ServerThread>()
+    val serverThreads= mutableStateListOf<ServerThread>()
     fun stop() {
-        serverThreads.forEach { it.interrupt() }
+        serverThreads.forEach { it.close() }
         serverSocket.close()
     }
 
     val coroutineScope= CoroutineScope(Dispatchers.Default)
-    inner class ServerThread(private val socket: Socket) : Thread() {
+    inner class ServerThread(val socket: Socket) : Thread() {
+        var clientData by mutableStateOf(ClientData("Unknown","Unknown"))
         var timeoutJob:Job=timeout(TIMEOUT){
-            interrupt()
+            close()
         }
         @OptIn(ExperimentalSerializationApi::class)
         override fun run() {
@@ -55,16 +60,24 @@ class SocketServer(val port: Int=PORT) {
                 if (sin.available() >= HeaderSize) {
                     val size =sin.readInt()
                     print("Size=$size:")
-                    val data=ProtoBuf.decodeFromByteArray<ServerProtocol>(sin.readNBytes(size))
-                    if (data is SendEvent){
+                    val data=ProtoBuf.decodeFromByteArray<SocketProtocol>(sin.readNBytes(size))
+                    when (data) {
+                        is SendEvent -> {
+                            callbacks.forEach { coroutineScope.launch { it(data.event,id) } }
+                        }
 
-                        callbacks.forEach { coroutineScope.launch { it(data.event,id) } }
-                    }else if(data is ServerProtocol.End){
-                        interrupt()
+                        is SocketProtocol.End -> {
+                            close()
+                        }
+
+                        is SocketProtocol.Hello -> {
+                            clientData=data.clientData
+                        }
+                        else -> {}
                     }
                     timeoutJob.cancel()
                     timeoutJob=timeout(TIMEOUT){
-                        socket.close()
+                        close()
                     }
                     println(data)
                 }
@@ -80,15 +93,31 @@ class SocketServer(val port: Int=PORT) {
                 block()
             }
         }
-
-        override fun interrupt() {
-            timeoutJob.cancel()
-            socket.getOutputStream().apply {
-                write(convertByteArray(ServerProtocol.End))
-                flush()
+        fun send(socketProtocol: SocketProtocol){
+            if (socket.isClosed||!socket.isConnected)return
+            coroutineScope.launch {
+                runCatching {
+                    withTimeout(1000){
+                        withContext(Dispatchers.IO) {
+                            socket.getOutputStream().apply {
+                                write(convertByteArray(socketProtocol))
+                                flush()
+                            }
+                        }
+                    }
+                }
             }
+        }
+        fun close(){
+            timeoutJob.cancel()
+            send(SocketProtocol.End)
             socket.close()
             callbacks.forEach { coroutineScope.launch { it(Event.CloseProject,id) } }
+            serverThreads.remove(this)
+        }
+        override fun interrupt() {
+            println("Interrupt")
+            close()
             super.interrupt()
         }
     }
