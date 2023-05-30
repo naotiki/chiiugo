@@ -24,22 +24,20 @@ class Client(val clientData: ClientData):Disposable {
             }
             s.on(Event.DATA) { data: Buffer ->
                 console.log("Size:${data.byteLength}")
-                console.log(data)
                 if (data.byteLength >= HeaderSize) {
                     val a = data.readIntBE(0, HeaderSize).toInt()
                     val d = ProtoBuf.decodeFromByteArray(SocketProtocol.serializer(), ByteArray(a) {
                         data.readInt8(HeaderSize + it).toByte()
                     })
-                    console.log(d)
                     when(d){
                         SocketProtocol.End -> {
                             socket?.end()
                             socket=null
                         }
-                        SocketProtocol.Error -> TODO()
-                        is SocketProtocol.Hello -> TODO()
-                        SocketProtocol.Ping -> TODO()
-                        is SocketProtocol.SendEvent -> TODO()
+                        else->{}
+                    }
+                    listener.forEach {
+                        it(d)
                     }
                 }
             }
@@ -63,10 +61,15 @@ class Client(val clientData: ClientData):Disposable {
             )
         ) != null
     }
+    private val listener= mutableListOf<(SocketProtocol)->Unit>()
+    fun onReceived(block:(SocketProtocol)->Unit){
+        listener.add(block)
+    }
 
     fun close() {
         send(SocketProtocol.End)
         socket?.resetAndDestroy()
+        listener.clear()
         socket = null
     }
 
