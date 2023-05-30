@@ -1,12 +1,10 @@
-import ConfigManager.configStateFlow
-import androidx.compose.animation.core.Animatable
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
@@ -15,32 +13,27 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
-import androidx.compose.ui.unit.times
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.rememberDialogState
 import androidx.compose.ui.window.rememberWindowState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.animatedimage.Blank
 import org.jetbrains.compose.animatedimage.animate
 import org.jetbrains.compose.animatedimage.loadResourceAnimatedImage
 import org.jetbrains.compose.resources.loadOrNull
-import kotlin.random.Random
+import org.jetbrains.kotlinx.kandy.dsl.invoke
 
 @Composable
-fun Mascot(){
-    val configState by configStateFlow.collectAsState()
-    val screenSize=rememberScreenSize()
-
+fun Mascot(screenSize: ScreenSize,configData: ConfigData){
     val mascotState = rememberMascotState(screenSize)
     val windowState = rememberWindowState(size = DpSize.Unspecified, position =mascotState.windowsPosState)
-    val coroutineScope= rememberCoroutineScope()
     LaunchedEffect(Unit){
         launch {
             mascotState.loop()
         }
     }
-    LaunchedEffect(configState.imageSize){
-
+    LaunchedEffect(configData.imageSize){
         windowState.size=DpSize.Unspecified
     }
     //画面スケール変更時
@@ -56,7 +49,7 @@ fun Mascot(){
         windowState.position = mascotState.windowsPosState
     }
 
-    //SUCの状態
+
     Window(
         onCloseRequest = {},
         state = windowState,
@@ -64,7 +57,7 @@ fun Mascot(){
         resizable = false,
         transparent = true,
         undecorated = true,
-        alwaysOnTop = configState.alwaysTop
+        alwaysOnTop = configData.alwaysTop
     ) {
 
         Box(modifier = Modifier) {
@@ -74,12 +67,12 @@ fun Mascot(){
                     loadResourceAnimatedImage(mascotState.gifName)
                 }?.animate() ?: ImageBitmap.Blank,
                 null,
-                Modifier.size(configState.imageSize.dp), colorFilter = ColorFilter.tint(mascotState.colorState, BlendMode.Modulate),
+                Modifier.size(configData.imageSize.dp), colorFilter = ColorFilter.tint(mascotState.colorState, BlendMode.Modulate),
             )
             val serif by mascotState.serifFlow.collectAsState()
 
             Box(
-                modifier = Modifier.padding(start = configState.imageSize.dp-(configState.imageSize.dp*0.05f), top = (configState.imageSize.dp*0.05f)).width(150.dp)
+                modifier = Modifier.padding(start = configData.imageSize.dp-(configData.imageSize.dp*0.05f), top = (configData.imageSize.dp*0.05f)).width(150.dp)
             ) {
                 if (serif != null) {
                     Text(

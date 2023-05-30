@@ -69,7 +69,7 @@ val defaultBehaviour:BehaviourFunc={
     }
 }
 typealias BehaviourFunc=suspend MascotState.()->Unit
-class MascotState(private val screenSize: ScreenSize,val coroutine: CoroutineScope) {
+class MascotState(private val screenSize: ScreenSize,) {
     private var behaviourFunc:BehaviourFunc?=null
     private var behaviourJob:Job? = null
     //Composition対応Coroutineスコープ内で実行
@@ -120,7 +120,7 @@ class MascotState(private val screenSize: ScreenSize,val coroutine: CoroutineSco
     private val serif = MutableStateFlow<String?>(null)
     val serifFlow = serif.asStateFlow()
     suspend fun say(string: String, delayMillis: Long, important: Boolean = false): Job? {
-        println("Say $important ${serif.value}→ $string")
+        //println("Say $important ${serif.value}→ $string")
         if (important) {
             serif.emit(string)
         } else if (serif.value == null) {
@@ -187,17 +187,18 @@ class MascotState(private val screenSize: ScreenSize,val coroutine: CoroutineSco
         val anim = Animatable(0f)
         val e = char to (Random.nextInt(ConfigManager.conf.imageSize.roundToInt()) to anim)
         charMap.add(e)
-        coroutine.launch {
-            anim.animateTo(ConfigManager.conf.imageSize - 10, tween(2000, easing = EaseOutBounce))
-            delay(Random.nextLong(500, 2000))
-            charMap.remove(e)
+        coroutineScope {
+            launch {
+                anim.animateTo(ConfigManager.conf.imageSize - 10, tween(2000, easing = EaseOutBounce))
+                delay(Random.nextLong(500, 2000))
+                charMap.remove(e)
+            }
         }
     }
 }
 @Composable
 fun rememberMascotState(screenSize: ScreenSize):MascotState {
-    val coroutine= rememberCoroutineScope()
-    return remember(screenSize) { MascotState(screenSize,coroutine) }
+    return remember(screenSize) { MascotState(screenSize) }
 }
 val texts = arrayOf(
     "優雅に雑音を聞く生活もいいかもしれないよ",
