@@ -54,7 +54,7 @@ dependencies {
 compose.desktop {
     application {
         buildTypes.release.proguard.isEnabled.set(false)
-        mainClass = "MainKt"
+        mainClass = "chiiugo.app.MainKt"
         jvmArgs += listOf("-Dfile.encoding=UTF-8")
         nativeDistributions {
             modules("java.sql")

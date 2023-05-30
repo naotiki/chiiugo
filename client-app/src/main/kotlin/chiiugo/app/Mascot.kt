@@ -1,3 +1,5 @@
+package chiiugo.app
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,8 +21,6 @@ import org.jetbrains.compose.animatedimage.Blank
 import org.jetbrains.compose.animatedimage.animate
 import org.jetbrains.compose.animatedimage.loadResourceAnimatedImage
 import org.jetbrains.compose.resources.loadOrNull
-import java.awt.event.WindowEvent
-import java.awt.event.WindowFocusListener
 
 @Composable
 fun Mascot(screenSize: ScreenSize, configData: ConfigData) {

@@ -1,3 +1,5 @@
+package chiiugo.app
+
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -41,8 +43,8 @@ data class ConfigData(
     var alwaysTop: Boolean = true,
     var imageSize: Float = 175f,
     var spawnCount: Int = 1,
-    var graphics:GraphicsData=GraphicsData(),
-    var debug:DebugData=DebugData()
+    var graphics: GraphicsData = GraphicsData(),
+    var debug: DebugData = DebugData()
 )
 
 @Serializable

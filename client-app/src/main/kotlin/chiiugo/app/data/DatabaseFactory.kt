@@ -1,4 +1,4 @@
-package data
+package chiiugo.app.data
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.datetime.Clock
