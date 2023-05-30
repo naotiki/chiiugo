@@ -27,7 +27,7 @@ class SocketServer(val port: Int=PORT) {
                 }
             }.onFailure { throwable ->
                 if (throwable is SocketException){
-                    throwable.printStackTrace()
+                    println(throwable.toString())
                 }else throw throwable
             }
             println("Server Shutdown")
