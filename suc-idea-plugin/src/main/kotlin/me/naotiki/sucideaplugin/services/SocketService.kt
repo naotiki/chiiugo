@@ -39,7 +39,10 @@ class SocketService : Disposable {
                             SocketProtocol.End -> {
                                 closeServer()
                             }
-
+                            SocketProtocol.Ping->{
+                                notificationGroup.createNotification("Pong!", NotificationType.INFORMATION)
+                                    .notify(null)
+                            }
                             else -> {
                                 println(e)
                             }
