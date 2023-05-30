@@ -1,4 +1,4 @@
-import ServerProtocol.SendEvent
+import SocketProtocol.SendEvent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,7 +46,7 @@ class SocketServer(val port: Int=PORT) {
     }
 
     val coroutineScope= CoroutineScope(Dispatchers.Default)
-    inner class ServerThread(private val socket: Socket) : Thread() {
+    inner class ServerThread(val socket: Socket) : Thread() {
         var clientData by mutableStateOf(ClientData("Unknown","Unknown"))
         var timeoutJob:Job=timeout(TIMEOUT){
             close()
@@ -60,17 +60,17 @@ class SocketServer(val port: Int=PORT) {
                 if (sin.available() >= HeaderSize) {
                     val size =sin.readInt()
                     print("Size=$size:")
-                    val data=ProtoBuf.decodeFromByteArray<ServerProtocol>(sin.readNBytes(size))
+                    val data=ProtoBuf.decodeFromByteArray<SocketProtocol>(sin.readNBytes(size))
                     when (data) {
                         is SendEvent -> {
                             callbacks.forEach { coroutineScope.launch { it(data.event,id) } }
                         }
 
-                        is ServerProtocol.End -> {
+                        is SocketProtocol.End -> {
                             close()
                         }
 
-                        is ServerProtocol.Hello -> {
+                        is SocketProtocol.Hello -> {
                             clientData=data.clientData
                         }
                         else -> {}
@@ -93,23 +93,28 @@ class SocketServer(val port: Int=PORT) {
                 block()
             }
         }
-        fun send(serverProtocol: ServerProtocol){
-            socket.getOutputStream().apply {
-                write(convertByteArray(serverProtocol))
-                flush()
+        fun send(socketProtocol: SocketProtocol){
+            if (socket.isClosed||!socket.isConnected)return
+            coroutineScope.launch {
+                withContext(Dispatchers.IO) {
+                    runCatching {
+                        socket.getOutputStream().apply {
+                            write(convertByteArray(socketProtocol))
+                            flush()
+                        }
+                    }
+                }
             }
         }
         fun close(){
             timeoutJob.cancel()
-            socket.getOutputStream().apply {
-                write(convertByteArray(ServerProtocol.End))
-                flush()
-            }
+            send(SocketProtocol.End)
             socket.close()
             callbacks.forEach { coroutineScope.launch { it(Event.CloseProject,id) } }
             serverThreads.remove(this)
         }
         override fun interrupt() {
+            println("Interrupt")
             close()
             super.interrupt()
         }
