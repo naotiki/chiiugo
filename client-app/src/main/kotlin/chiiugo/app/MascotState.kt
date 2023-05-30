@@ -1,3 +1,6 @@
+package chiiugo.app
+
+import Event
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.*
 import androidx.compose.runtime.*
@@ -52,7 +55,7 @@ enum class Behaviours(val behaviourFunc: BehaviourFunc){
     })
 }
 
-val defaultBehaviour:BehaviourFunc={
+val defaultBehaviour: BehaviourFunc ={
     randomWalk()
     delay(Random.nextLong(0, 2000))
     say(texts.random(), 5000)
@@ -70,12 +73,12 @@ val defaultBehaviour:BehaviourFunc={
 }
 typealias BehaviourFunc=suspend MascotState.()->Unit
 class MascotState(private val screenSize: ScreenSize,) {
-    private var behaviourFunc:BehaviourFunc?=null
+    private var behaviourFunc: BehaviourFunc?=null
     private var behaviourJob:Job? = null
     //Composition対応Coroutineスコープ内で実行
     suspend fun loop() {
         coroutineScope {
-            server.onEventReceive {e,_->
+            server.onEventReceive { e, _->
                 println("Event Receive:$e")
                 when (e) {
                     is Event.FailedBuild -> {
@@ -198,7 +201,7 @@ class MascotState(private val screenSize: ScreenSize,) {
     }
 }
 @Composable
-fun rememberMascotState(screenSize: ScreenSize):MascotState {
+fun rememberMascotState(screenSize: ScreenSize): MascotState {
     return remember(screenSize) { MascotState(screenSize) }
 }
 val texts = arrayOf(
