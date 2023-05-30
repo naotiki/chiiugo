@@ -13,8 +13,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import data.DatabaseFactory
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.skiko.GpuPriority
+import org.jetbrains.skiko.GraphicsApi
 import kotlin.random.Random
 
 val colorList =
@@ -22,16 +25,22 @@ val colorList =
 val server by lazy { SocketServer() }
 
 @OptIn(ExperimentalResourceApi::class, ExperimentalComposeUiApi::class)
-fun main() = application {
-    val coroutineScope = rememberCoroutineScope()
-    val configState by ConfigManager.configStateFlow.collectAsState()
-    DisposableEffect(Unit) {
-        DatabaseFactory.init()
-        coroutineScope.launch { server.runServer() }
-        onDispose {
-            server.stop()
+fun main() {
+    val graphicsData=ConfigManager.conf.graphics
+    System.setProperty("skiko.renderApi",graphicsData.renderApi)
+    System.setProperty("skiko.fps.enabled",graphicsData.fps.toString())
+    System.setProperty("skiko.vsync.enabled",graphicsData.vsync.toString())
+    System.setProperty("skiko.gpu.priority",graphicsData.gpu.value)
+    application {
+        val coroutineScope = rememberCoroutineScope()
+        val configState by ConfigManager.configStateFlow.collectAsState()
+        DisposableEffect(Unit) {
+            DatabaseFactory.init()
+            coroutineScope.launch { server.runServer() }
+            onDispose {
+                server.stop()
+            }
         }
-    }
 
         var exitCount by remember { mutableStateOf(0) }
         val screenSize=rememberScreenSize()
@@ -89,7 +98,8 @@ fun main() = application {
             }
         }
 
-    ControlWindow(controlWindowTab != null, { controlWindowTab = null }, controlWindowTab ?: 0)
+        ControlWindow(controlWindowTab != null, { controlWindowTab = null }, controlWindowTab ?: 0)
+    }
 }
 
 
