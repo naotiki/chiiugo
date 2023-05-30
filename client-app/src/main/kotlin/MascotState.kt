@@ -184,6 +184,7 @@ class MascotState(private val screenSize: ScreenSize,) {
     val charMap =  mutableStateListOf<Pair<Char, Pair<Int, Animatable<Float, AnimationVector1D>>>>()
 
     suspend fun feed(char: Char) {
+        if (!char.isLetterOrDigit()||charMap.size>1000)return
         val anim = Animatable(0f)
         val e = char to (Random.nextInt(ConfigManager.conf.imageSize.roundToInt()) to anim)
         charMap.add(e)
