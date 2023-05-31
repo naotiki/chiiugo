@@ -111,3 +111,10 @@ tasks.register("superReleaseBuild") {
         zipTo(zip, app.listFiles()!!.single())
     }
 }
+    withType<JavaCompile> {
+        sourceCompatibility = "1.8"
+        targetCompatibility = "1.8"
+    }
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions.jvmTarget = "1.8"
+    }
