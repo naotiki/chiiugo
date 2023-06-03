@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.onDrag
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -39,6 +40,7 @@ import org.jetbrains.kotlinx.kandy.letsplot.layers.bars
 import org.jetbrains.kotlinx.kandy.letsplot.layout
 import org.jetbrains.kotlinx.kandy.letsplot.x
 import org.jetbrains.kotlinx.kandy.letsplot.y
+import java.awt.Desktop
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
@@ -113,6 +115,17 @@ fun ControlWindow(visible: Boolean = true, onCloseRequest: () -> Unit, selectedT
 
                         1 -> {
                             val coroutineScope = rememberCoroutineScope()
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("設定", fontSize = 40.sp)
+                                Spacer(Modifier.weight(1f))
+                                Button({
+                                    Desktop.getDesktop().open(ConfigManager.configFile)
+                                }){
+                                    Icon(Icons.Default.FileOpen,null)
+                                    Spacer(Modifier.width(5.dp))
+                                    Text("設定ファイル")
+                                }
+                            }
                             Text("領域設定", Modifier, fontSize = 25.sp)
                             val offset =
                                 remember(screenSize.density) {
