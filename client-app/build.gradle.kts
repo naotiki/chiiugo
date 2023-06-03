@@ -33,6 +33,7 @@ dependencies {
     implementation(compose.desktop.currentOs)
     @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
     implementation(compose.desktop.components.animatedImage)
+    implementation(compose.materialIconsExtended)
 
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
