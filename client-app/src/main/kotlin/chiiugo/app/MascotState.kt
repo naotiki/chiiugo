@@ -18,6 +18,7 @@ sealed interface MascotEventType {
     object None : MascotEventType
     object Run : MascotEventType
     object Gaming : MascotEventType
+
     //転ぶ
     object Fall : MascotEventType
 
@@ -30,20 +31,22 @@ sealed interface MascotEventType {
 
 }
 
-enum class Behaviours(val behaviourFunc: BehaviourFunc){
+enum class Behaviours(val behaviourFunc: BehaviourFunc) {
     Fall({
         gifName = "fallSUC.gif"
         delay(950)
     }),
     Gaming({
         coroutineScope {
-            val aho = launch { while(true) {
-                var random = Color(colorList.random())
-                while (colorState == random) {
-                    random = Color(colorList.random())
+            val aho = launch {
+                while (true) {
+                    var random: androidx.compose.ui.graphics.Color
+                    do  {
+                        random = Color(colorList.random())
+                    }while(colorState == random)
+                    color.animateTo(random, tween(160, easing = EaseInBack))
                 }
-                color.animateTo(random, tween(160, easing = EaseInBack))
-            } }
+            }
             randomWalk()
             aho.cancel()
             color.snapTo(Color.White)
@@ -55,7 +58,7 @@ enum class Behaviours(val behaviourFunc: BehaviourFunc){
     })
 }
 
-val defaultBehaviour: BehaviourFunc ={
+val defaultBehaviour: BehaviourFunc = {
     randomWalk()
     delay(Random.nextLong(0, 2000))
     say(texts.random(), 5000)
@@ -63,22 +66,26 @@ val defaultBehaviour: BehaviourFunc ={
         0 -> {
             changeBehaviour(Behaviours.Fall.behaviourFunc)
         }
+
         in 1..7 -> {
             changeBehaviour(Behaviours.Gaming.behaviourFunc)
         }
+
         in 8..15 -> {
             changeBehaviour(Behaviours.Flying.behaviourFunc)
         }
     }
 }
-typealias BehaviourFunc=suspend MascotState.()->Unit
-class MascotState(private val screenSize: ScreenSize,) {
-    private var behaviourFunc: BehaviourFunc?=null
-    private var behaviourJob:Job? = null
+typealias BehaviourFunc = suspend MascotState.() -> Unit
+
+class MascotState(private val screenSize: ScreenSize) {
+    private var behaviourFunc: BehaviourFunc? = null
+    private var behaviourJob: Job? = null
+
     //Composition対応Coroutineスコープ内で実行
     suspend fun loop() {
         coroutineScope {
-            server.onEventReceive { e, _->
+            server.onEventReceive { e, _ ->
                 println("Event Receive:$e")
                 when (e) {
                     is Event.FailedBuild -> {
@@ -87,21 +94,26 @@ class MascotState(private val screenSize: ScreenSize,) {
                             say("ビルド ${e.buildId} 失敗！", 5000, true)?.join()
                         }
                     }
+
                     is Event.OpenProject -> {
                         say("プロジェクト ${e.projectName} を開きました！", 5000, true)
                     }
+
                     is Event.StartBuild -> {
                         say("ビルド ${e.buildId} を実行中", 5000, true)
                     }
+
                     is Event.SuccessBuild -> {
-                        say( "ビルド ${e.buildId} 成功！", 5000, true)
+                        say("ビルド ${e.buildId} 成功！", 5000, true)
                     }
+
                     is Event.Typed -> {
                         this@coroutineScope.launch {
                             feed(e.char)
                         }
                     }
-                    else->{}
+
+                    else -> {}
                 }
             }
             while (true) {
@@ -118,7 +130,8 @@ class MascotState(private val screenSize: ScreenSize,) {
         }
     }
 
-    private val stateCoroutineScope= CoroutineScope(Dispatchers.Default)
+    private val stateCoroutineScope = CoroutineScope(Dispatchers.Default)
+
     //nullで吹き出し非表示
     private val serif = MutableStateFlow<String?>(null)
     val serifFlow = serif.asStateFlow()
@@ -138,28 +151,43 @@ class MascotState(private val screenSize: ScreenSize,) {
         }
     }
 
+    var lockMovement = false
+    fun suspendMovement() {
+        lockMovement = true
+        movementJob?.cancel()
+    }
+
+    suspend fun restartMovement(position: WindowPosition.Absolute?) {
+        if (position != null) {
+            animatedWindowPosition.snapTo(position)
+        }
+        lockMovement = false
+    }
 
 
-    fun changeBehaviour(behaviourFunc: BehaviourFunc?){
-        this.behaviourFunc=behaviourFunc
+    fun changeBehaviour(behaviourFunc: BehaviourFunc?) {
+        this.behaviourFunc = behaviourFunc
         behaviourJob?.cancel()
     }
+
     private fun randomWindowPos(): WindowPosition.Absolute {
         val x =
-            screenSize.widthDp.value*1.5f * ConfigManager.conf.areaOffset.first + (Random.nextFloat() * screenSize.widthDp.value * ConfigManager.conf.areaSize.first)
+            screenSize.widthDp.value * 1.5f * ConfigManager.conf.areaOffset.first + (Random.nextFloat() * screenSize.widthDp.value * ConfigManager.conf.areaSize.first)
         val y =
-            screenSize.heightDp.value*1.5f * ConfigManager.conf.areaOffset.second + (Random.nextFloat() * screenSize.heightDp.value * ConfigManager.conf.areaSize.second)
-        return WindowPosition(x.dp,y.dp)
+            screenSize.heightDp.value * 1.5f * ConfigManager.conf.areaOffset.second + (Random.nextFloat() * screenSize.heightDp.value * ConfigManager.conf.areaSize.second)
+        return WindowPosition(x.dp, y.dp)
     }
-    suspend fun randomWalk( millis:Int=5000)=randomWindowPos().let {
-        walk(it,millis)
-    }
+
+    suspend fun randomWalk(millis: Int = 5000) = walk(randomWindowPos(), millis)
+
     var gifName by mutableStateOf("SUC.gif")
-    val color= Animatable(Color.White/*初期の色*/)
+    val color = Animatable(Color.White/*初期の色*/)
     val colorState by color.asState()
-    private val animatedWindowPosition= AnimationState(WindowPositionToVector, randomWindowPos())
-    val windowsPosState by animatedWindowPosition
-    suspend fun walk(windowPosition: WindowPosition.Absolute, millis:Int){
+    private var animatedWindowPosition =
+        Animatable( randomWindowPos(),WindowPositionToVector)
+    val windowsPosState by animatedWindowPosition.asState()
+    var movementJob: Job? = null
+    suspend fun walk(windowPosition: WindowPosition.Absolute, millis: Int) {
 
         gifName = if (windowPosition.x.value > windowsPosState.x.value) {
             if (windowPosition.y.value >= windowsPosState.y.value) {
@@ -174,20 +202,26 @@ class MascotState(private val screenSize: ScreenSize,) {
                 "upleft.gif"
             }
         }
-
-            animatedWindowPosition.animateTo(
-                windowPosition,
-                tween(
-                    millis, easing = EaseInOut
+        if (lockMovement) return
+        coroutineScope {
+            movementJob = launch {
+                animatedWindowPosition.animateTo(
+                    windowPosition,
+                    tween(
+                        millis, easing = EaseInOut
+                    )
                 )
-            )
+            }
+            movementJob?.join()
+            movementJob = null
+        }
     }
 
 
-    val charMap =  mutableStateListOf<Pair<Char, Pair<Int, Animatable<Float, AnimationVector1D>>>>()
+    val charMap = mutableStateListOf<Pair<Char, Pair<Int, Animatable<Float, AnimationVector1D>>>>()
 
     suspend fun feed(char: Char) {
-        if (!char.isLetterOrDigit()||charMap.size>1000)return
+        if (!char.isLetterOrDigit() || charMap.size > 1000) return
         val anim = Animatable(0f)
         val e = char to (Random.nextInt(ConfigManager.conf.imageSize.roundToInt()) to anim)
         charMap.add(e)
@@ -200,10 +234,12 @@ class MascotState(private val screenSize: ScreenSize,) {
         }
     }
 }
+
 @Composable
 fun rememberMascotState(screenSize: ScreenSize): MascotState {
     return remember(screenSize) { MascotState(screenSize) }
 }
+
 val texts = arrayOf(
     "優雅に雑音を聞く生活もいいかもしれないよ",
     "もぅﾏﾁﾞ無理...コンパイルしょ...",
