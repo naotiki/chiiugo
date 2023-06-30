@@ -48,7 +48,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
     implementation("com.h2database:h2:2.1.214")
-
+    implementation("com.1stleg:jnativehook:2.1.0")
     implementation(project(":chiiugo-protocol-core"))
 }
 
