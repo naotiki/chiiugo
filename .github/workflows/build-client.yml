@@ -48,5 +48,6 @@ jobs:
           name: ${{ inputs.os }}-package
           path: |
             client-app/build/compose/binaries/main-release/*/*.*
+            !client-app/build/compose/binaries/main-release/*/*.app
             client-app/build/compose/jars/*.jar
           if-no-files-found: error
