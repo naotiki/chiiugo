@@ -16,7 +16,7 @@ class Client(val clientData: ClientData):Disposable {
     var socket: Socket? = null
 
     fun startServer(): Promise<Unit> {
-        return Promise { resolve, reject ->
+        return Promise { resolve, _ ->
             val s = Socket()
             s.once(Event.ERROR) {
                 console.log("Error")

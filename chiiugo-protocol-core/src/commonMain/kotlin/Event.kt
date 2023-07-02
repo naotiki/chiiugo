@@ -18,6 +18,7 @@ sealed class Event{
     data class SuccessBuild(val buildId:String) : Event()
     @Serializable
     data class FailedBuild(val buildId:String): Event()
+    @Suppress("NON_EXPORTABLE_TYPE")
     @Serializable
     data class Typed(val char: Char): Event()
     @Serializable
