@@ -59,7 +59,7 @@ compose.desktop {
         jvmArgs += listOf("-Dfile.encoding=UTF-8")
         nativeDistributions {
             modules("java.sql")
-            targetFormats( TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
+            targetFormats( TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm,TargetFormat.Dmg)
             packageName = "Chiiugo"
             description = "Chiiugo Client App"
             vendor="Naotiki"
@@ -68,6 +68,9 @@ compose.desktop {
                 rpmPackageVersion = appVersion.generateRpmVersion()
                 shortcut = true
                 iconFile.set(file("Chiiugo.png"))
+            }
+            macOS{
+                packageVersion=appVersion.generateMacVersion()
             }
             windows {
                 perUserInstall=true

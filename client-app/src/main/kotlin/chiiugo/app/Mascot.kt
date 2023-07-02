@@ -58,13 +58,13 @@ fun Mascot(screenSize: ScreenSize, configData: ConfigData) {
 
 
     Window(
-        onCloseRequest = {},
+        onCloseRequest = {/*閉じさせない*/},
         state = windowState,
-        focusable = false,
-        resizable = false,
-        transparent = true,
-        undecorated = true,
-        alwaysOnTop = configData.alwaysTop,
+        focusable = false,//フォーカス無効
+        resizable = false,//サイズ変更禁止
+        transparent = true,//背景透過
+        undecorated = true,//タイトルバーなし
+        alwaysOnTop = configData.alwaysTop,//最前面
     ) {
         val coroutine= rememberCoroutineScope()
         WindowDraggableArea(Modifier.onDrag(onDragStart = {

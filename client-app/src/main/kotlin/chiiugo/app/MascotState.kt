@@ -32,7 +32,7 @@ sealed interface MascotEventType {
 }
 
 enum class Behaviours(val behaviourFunc: BehaviourFunc) {
-    Fall({
+    FallDown({
         gifName = "fallSUC.gif"
         delay(950)
     }),
@@ -41,7 +41,7 @@ enum class Behaviours(val behaviourFunc: BehaviourFunc) {
             val aho = launch {
                 while (true) {
                     var random: androidx.compose.ui.graphics.Color
-                    do  {
+                    do {
                         random = Color(colorList.random())
                     }while(colorState == random)
                     color.animateTo(random, tween(160, easing = EaseInBack))
@@ -64,15 +64,13 @@ val defaultBehaviour: BehaviourFunc = {
     say(texts.random(), 5000)
     when ((0 until 30).random()) {
         0 -> {
-            changeBehaviour(Behaviours.Fall.behaviourFunc)
+            changeBehaviour(Behaviours.FallDown)
         }
-
         in 1..7 -> {
-            changeBehaviour(Behaviours.Gaming.behaviourFunc)
+            changeBehaviour(Behaviours.Gaming)
         }
-
         in 8..15 -> {
-            changeBehaviour(Behaviours.Flying.behaviourFunc)
+            changeBehaviour(Behaviours.Flying)
         }
     }
 }
@@ -164,7 +162,7 @@ class MascotState(private val screenSize: ScreenSize) {
         lockMovement = false
     }
 
-
+    fun changeBehaviour(behaviours: Behaviours)=changeBehaviour(behaviours.behaviourFunc)
     fun changeBehaviour(behaviourFunc: BehaviourFunc?) {
         this.behaviourFunc = behaviourFunc
         behaviourJob?.cancel()
@@ -202,7 +200,10 @@ class MascotState(private val screenSize: ScreenSize) {
                 "upleft.gif"
             }
         }
-        if (lockMovement) return
+        if (lockMovement) {
+            delay(millis.toLong())
+            return
+        }
         coroutineScope {
             movementJob = launch {
                 animatedWindowPosition.animateTo(
