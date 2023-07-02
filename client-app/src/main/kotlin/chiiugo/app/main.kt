@@ -49,13 +49,13 @@ fun main() {
             }
         }
 
-        var exitCount by remember { mutableStateOf(0) }
         val screenSize= rememberScreenSize()
         //Windowを表示
         repeat(configState.spawnCount){
             Mascot(screenSize,configState)
         }
         var controlWindowTab by remember { mutableStateOf<Int?>(null) }
+        var exitCount by remember { mutableStateOf(0) }
         /*Bitmap Only*/
         Tray(painterResource("SUCIcon.png")) {
             Item("設定") {
@@ -91,15 +91,14 @@ fun main() {
                             } else {
                                 dialogState.position = WindowPosition(
                                     BiasAlignment(
-                                        Random.nextInt(-1, 1).toFloat(),
-                                        Random.nextInt(-1, 1).toFloat()
+                                        1-Random.nextFloat()*2,
+                                        1-Random.nextFloat()*2
                                     )
                                 )
                             }
                         }) {
                             Text("Yes")
                         }
-
                     }
                 }
             }

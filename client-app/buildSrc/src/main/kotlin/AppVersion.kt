@@ -30,6 +30,12 @@ data class AppVersion(
             }
         }
     }
+    fun generateMacVersion():String{
+        val winPatch=if (preRelease!=null&&preReleaseNumber!=null){
+            (patch shl 8) or (preRelease.ordinal shl 6) or preReleaseNumber
+        }else (patch shl 8) or (0b11 shl 6)
+        return "${major+1}.$minor.$winPatch"
+    }
     fun generateWindowsVersion(): String {
         val winPatch=if (preRelease!=null&&preReleaseNumber!=null){
             (patch shl 8) or (preRelease.ordinal shl 6) or preReleaseNumber

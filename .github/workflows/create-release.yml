@@ -16,7 +16,7 @@ jobs:
     if: startsWith( inputs.version || github.ref_name , 'v' )
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest,macos-latest]
     uses: ./.github/workflows/build-client.yml
     with:
       version: ${{ inputs.version || github.ref_name }}
