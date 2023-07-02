@@ -33,6 +33,7 @@ dependencies {
     implementation(compose.desktop.currentOs)
     @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
     implementation(compose.desktop.components.animatedImage)
+    implementation(compose.materialIconsExtended)
 
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
@@ -47,7 +48,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
     implementation("com.h2database:h2:2.1.214")
-
+    implementation("com.1stleg:jnativehook:2.1.0")
     implementation(project(":chiiugo-protocol-core"))
 }
 
@@ -58,7 +59,7 @@ compose.desktop {
         jvmArgs += listOf("-Dfile.encoding=UTF-8")
         nativeDistributions {
             modules("java.sql")
-            targetFormats( TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
+            targetFormats( TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm,TargetFormat.Dmg)
             packageName = "Chiiugo"
             description = "Chiiugo Client App"
             vendor="Naotiki"
@@ -67,6 +68,9 @@ compose.desktop {
                 rpmPackageVersion = appVersion.generateRpmVersion()
                 shortcut = true
                 iconFile.set(file("Chiiugo.png"))
+            }
+            macOS{
+                packageVersion=appVersion.generateMacVersion()
             }
             windows {
                 perUserInstall=true
