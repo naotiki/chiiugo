@@ -1,6 +1,6 @@
 @file:Suppress("RemoveRedundantQualifierName")
 @file:OptIn(kotlin.js.ExperimentalJsExport::class)
-@file:kotlin.js.JsExport
+//@file:kotlin.js.JsExport
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -11,7 +11,7 @@ sealed class Event{
     @Serializable
     data class OpenProject(val projectName:String): Event()
     @Serializable
-    object CloseProject: Event()
+    data object CloseProject: Event()
     @Serializable
     data class StartBuild(val buildId:String) : Event()
     @Serializable
@@ -38,9 +38,9 @@ sealed class SocketProtocol{
     @Serializable
     data class SendEvent(val event:Event): SocketProtocol()
     @Serializable
-    object End: SocketProtocol()
+    data object End: SocketProtocol()
     @Serializable
-    object Error: SocketProtocol()
+    data object Error: SocketProtocol()
 
     @Serializable
     object Ping: SocketProtocol()

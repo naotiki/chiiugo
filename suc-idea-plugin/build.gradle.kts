@@ -3,32 +3,24 @@ import kotlin.reflect.KProperty
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.8.20"
+    id("org.jetbrains.kotlin.jvm") version "1.9.23"
     id("org.jetbrains.intellij") version "1.13.3"
-    kotlin("plugin.serialization") version "1.8.10"
+    kotlin("plugin.serialization") version "1.9.23"
 }
 
 val publishProperties=Properties()
 publishProperties.load(file("publish.properties").bufferedReader())
 group = "me.naotiki"
-version = "1.0-SNAPSHOT7"
-sourceSets{
-    kotlin{
-        main{
-            kotlin{
-                srcDir("../suc-protocol")
-            }
-        }
-    }
-}
+version = "1.0-SNAPSHOT8"
+
 repositories {
     mavenCentral()
 }
 dependencies{
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.5.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.6.3")
     implementation(project(":chiiugo-protocol-core"))
 }
 // Configure Gradle IntelliJ Plugin
@@ -52,7 +44,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("222")
-        untilBuild.set("232.*")
+        untilBuild.set("")
     }
 
     signPlugin {

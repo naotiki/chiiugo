@@ -1,5 +1,4 @@
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJsCompilation
-import org.jetbrains.kotlin.gradle.targets.js.npm.PublicPackageJsonTask
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
     kotlin("multiplatform")
@@ -21,30 +20,17 @@ dependencies {
 
 }
 
-
 kotlin {
-    targets {
-        js {
-            compilations.all{
-                packageJson {
-                    //name="@naotiki/chiiugo"
-                    private=false
-                }
-            }
-        }
-    }
     jvm()
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs()
     js(IR) {
-        compilations.getByName("main"){
-            packageJson {
-                name="@naotiki/chiiugo"
-                private=false
-            }
-        }
         binaries.executable()
 
         nodejs {
+            this.runTask {
 
+            }
         }
         generateTypeScriptDefinitions()
     }
@@ -53,8 +39,8 @@ kotlin {
             dependencies {
                 //testImplementation(kotlin("test"))
                 //implementation("org.jetbrains.kotlinx:kotlinx-nodejs:0.0.7")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.5.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.6.3")
             }
 
 
