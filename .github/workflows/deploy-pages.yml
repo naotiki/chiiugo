@@ -37,7 +37,7 @@ jobs:
           arguments: wasmJsBrowserProductionWebpack
           build-root-directory: client-app/
       - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v1.0.3
+        uses: actions/upload-pages-artifact@v3
         with:
           # Path of the directory containing the static assets.
           path: client-app/build/dist/wasmJs/productionExecutable/
@@ -51,4 +51,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v3
