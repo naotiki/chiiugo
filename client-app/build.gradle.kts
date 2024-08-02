@@ -84,7 +84,7 @@ compose.experimental {
 compose.desktop {
     application {
         buildTypes.release.proguard.isEnabled.set(false)
-        mainClass = "chiiugo.app.MainKt"
+        mainClass = "me.naotiki.chiiugo.MainKt"
         jvmArgs += listOf("-Dfile.encoding=UTF-8")
         nativeDistributions {
             modules("java.sql")
