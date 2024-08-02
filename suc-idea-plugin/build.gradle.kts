@@ -1,3 +1,4 @@
+import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import java.util.*
 import kotlin.reflect.KProperty
 
@@ -21,7 +22,10 @@ repositories {
 }
 dependencies{
     intellijPlatform {
-        intellijIdeaCommunity("2023.3")
+        intellijIdeaCommunity("2023.1")
+        pluginVerifier()
+        zipSigner()
+        instrumentationTools()
     }
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
@@ -39,6 +43,25 @@ dependencies{
     plugins.set(listOf(*//* Plugin Dependencies *//*))
 }*/
 
+intellijPlatform{
+    pluginConfiguration{
+        ideaVersion{
+            sinceBuild = "231"
+            untilBuild = provider { null }
+        }
+    }
+    pluginVerification{
+        ides{
+            select {
+                channels = listOf(
+                    ProductRelease.Channel.RELEASE,
+                    ProductRelease.Channel.RC
+                )
+            }
+        }
+    }
+}
+
 tasks {
     // Set the JVM compatibility versions
     withType<JavaCompile> {
@@ -47,11 +70,6 @@ tasks {
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions.jvmTarget = "17"
-    }
-
-    patchPluginXml {
-        sinceBuild.set("222")
-        untilBuild.set("")
     }
 
     signPlugin {
