@@ -39,7 +39,7 @@ kotlin {
             dependencies {
                 //testImplementation(kotlin("test"))
                 //implementation("org.jetbrains.kotlinx:kotlinx-nodejs:0.0.7")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.6.3")
             }
 
@@ -47,7 +47,8 @@ kotlin {
         }
         val jsMain by getting {
             dependencies {
-                implementation(enforcedPlatform(kotlinw("wrappers-bom:$kotlinWrappersVersion")))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+                implementation(project.dependencies.enforcedPlatform(kotlinw("wrappers-bom:$kotlinWrappersVersion")))
                 implementation(kotlinw("node"))
             }
         }

@@ -12,7 +12,7 @@ plugins {
 val publishProperties=Properties()
 publishProperties.load(file("publish.properties").bufferedReader())
 group = "me.naotiki"
-version = "1.0-SNAPSHOT8"
+version = "1.0-SNAPSHOT9"
 
 repositories {
     mavenCentral()
@@ -22,13 +22,12 @@ repositories {
 }
 dependencies{
     intellijPlatform {
-        intellijIdeaCommunity("2023.1")
+        intellijIdeaCommunity("2024.1")
         pluginVerifier()
         zipSigner()
         instrumentationTools()
     }
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.6.3")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.6.3")
@@ -43,10 +42,22 @@ dependencies{
     plugins.set(listOf(*//* Plugin Dependencies *//*))
 }*/
 
+kotlin{
+    jvmToolchain(17)
+}
+
 intellijPlatform{
+    signing{
+        certificateChainFile.set(file("certificate/chain.crt"))
+        privateKeyFile.set(file("certificate/private.pem"))
+        password.set(publishProperties.getProperty("password"))
+    }
+    publishing{
+        token.set(publishProperties.getProperty("token"))
+    }
     pluginConfiguration{
         ideaVersion{
-            sinceBuild = "231"
+            sinceBuild = "241"
             untilBuild = provider { null }
         }
     }
@@ -59,26 +70,5 @@ intellijPlatform{
                 )
             }
         }
-    }
-}
-
-tasks {
-    // Set the JVM compatibility versions
-    withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
-    }
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
-    }
-
-    signPlugin {
-        certificateChainFile.set(file("certificate/chain.crt"))
-        privateKeyFile.set(file("certificate/private.pem"))
-        password.set(publishProperties.getProperty("password"))
-    }
-
-    publishPlugin {
-        token.set(publishProperties.getProperty("token"))
     }
 }
