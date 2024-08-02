@@ -4,7 +4,7 @@ import kotlin.reflect.KProperty
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.23"
-    id("org.jetbrains.intellij") version "1.13.3"
+    id("org.jetbrains.intellij.platform") version "2.0.0"
     kotlin("plugin.serialization") version "1.9.23"
 }
 
@@ -15,8 +15,15 @@ version = "1.0-SNAPSHOT8"
 
 repositories {
     mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 dependencies{
+    intellijPlatform {
+        intellijIdeaCommunity("2023.3")
+    }
+
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.6.3")
@@ -25,12 +32,12 @@ dependencies{
 }
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
-intellij {
+/*intellij {
     version.set("2022.2.5")
     type.set("IC") // Target IDE Platform
 
-    plugins.set(listOf(/* Plugin Dependencies */))
-}
+    plugins.set(listOf(*//* Plugin Dependencies *//*))
+}*/
 
 tasks {
     // Set the JVM compatibility versions
