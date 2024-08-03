@@ -4,9 +4,9 @@ import kotlin.reflect.KProperty
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.9.23"
-    id("org.jetbrains.intellij.platform") version "2.0.0"
-    kotlin("plugin.serialization") version "1.9.23"
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.intelliJPlatform)
+    alias(libs.plugins.ktx.serialization)
 }
 
 val publishProperties=Properties()
@@ -59,17 +59,17 @@ intellijPlatform{
     }
     pluginConfiguration{
         ideaVersion{
-            sinceBuild = "241"
-            untilBuild = provider { null }
+            sinceBuild.set("241")
+            untilBuild.set(provider { null })
         }
     }
     pluginVerification{
         ides{
             select {
-                channels = listOf(
+                channels.set(listOf(
                     ProductRelease.Channel.RELEASE,
                     ProductRelease.Channel.RC
-                )
+                ))
             }
         }
     }
