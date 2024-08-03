@@ -5,9 +5,10 @@ import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
-    kotlin("multiplatform")
-    id("org.jetbrains.compose")
-    kotlin("plugin.serialization") version "1.8.10"
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.jetbrainsCompose)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ktx.serialization)
 }
 kotlin{
     @OptIn(ExperimentalWasmDsl::class)
@@ -25,7 +26,6 @@ kotlin{
         val desktopMain by getting
 
         commonMain.dependencies {
-
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material)
@@ -76,11 +76,6 @@ repositories {
 val appVersion = AppVersion.parseAppVersion(project.properties.getOrDefault("appVersion", "v0.0.1-dev1").toString())
 version = appVersion.toString()
 
-compose.experimental {
-    web.application {
-
-    }
-}
 compose.desktop {
     application {
         buildTypes.release.proguard.isEnabled.set(false)
