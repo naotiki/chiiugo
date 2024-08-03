@@ -3,24 +3,26 @@ package me.naotiki.chiiugo
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.PointerMatcher
 import androidx.compose.foundation.gestures.onDrag
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.onClick
 import androidx.compose.foundation.window.WindowDraggableArea
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.input.pointer.PointerButton
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.layout.*
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.rememberWindowState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MascotWrapper(areaSize: AreaSize, configData: ConfigData) {
-
+    val density = LocalDensity.current.density
     val mascotState = rememberMascotState(areaSize)
     val windowState =
         rememberWindowState(size = DpSize.Unspecified, position = mascotState.areaPosState.toWindowPosition())
@@ -74,7 +76,7 @@ fun MascotWrapper(areaSize: AreaSize, configData: ConfigData) {
         windowState.position = mascotState.areaPosState.toWindowPosition()
     }
 
-
+    var cacheSize: IntSize? by remember { mutableStateOf(null) }
     Window(
         onCloseRequest = {},
         state = windowState,
@@ -100,7 +102,14 @@ fun MascotWrapper(areaSize: AreaSize, configData: ConfigData) {
                 mascotState.suspendMovement()
             }
         }) {}) {
-            Mascot(mascotState, configData)
+            Mascot(mascotState, configData, modifier = Modifier.wrapContentSize(unbounded = true).onSizeChanged {
+                if (cacheSize == it) {
+                    return@onSizeChanged
+                }
+                windowState.size = DpSize.Unspecified
+                cacheSize = it
+            })
         }
     }
 }
+

@@ -2,6 +2,7 @@ package me.naotiki.chiiugo
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
@@ -33,15 +34,14 @@ private val forceClose = arrayOf(Key.R, Key.E, Key.I, Key.S, Key.U, Key.B)
 @OptIn(ExperimentalResourceApi::class)
 val font @Composable get() = FontFamily(Font(Res.font.NotoSansJP))
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
-fun Mascot(mascotState: MascotState, configData: ConfigData,modifier: Modifier=Modifier) {
+fun Mascot(mascotState: MascotState, configData: ConfigData, modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) {
         launch {
             mascotState.loop()
         }
     }
-    Box(modifier = modifier) {
+    Box(modifier = modifier.border(1.dp, Color.Red)) {
         //SUCちゃん
         Image(
             loadOrNull(mascotState.gifName) {
@@ -53,15 +53,15 @@ fun Mascot(mascotState: MascotState, configData: ConfigData,modifier: Modifier=M
         )
         val serif by mascotState.serifFlow.collectAsState()
 
-        Box(
-            modifier = Modifier.padding(
-                start = configData.imageSize.dp - (configData.imageSize.dp * 0.05f),
-                top = (configData.imageSize.dp * 0.05f)
-            ).width(150.dp)
-        ) {
+        if (serif != null) {
+            Box(
+                modifier = Modifier.padding(
+                    start = configData.imageSize.dp - (configData.imageSize.dp * 0.05f),
+                    top = (configData.imageSize.dp * 0.05f)
+                ).width(150.dp)
+            ) {
 
 
-            if (serif != null) {
                 Text(
                     serif ?: "",
                     modifier = Modifier
