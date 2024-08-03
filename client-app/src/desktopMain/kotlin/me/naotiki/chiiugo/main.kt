@@ -36,7 +36,6 @@ private val screenPx =
         width to height
     }
 
-@OptIn(ExperimentalResourceApi::class, ExperimentalComposeUiApi::class)
 fun main() {
     val graphicsData = ConfigManager.conf.graphics
     System.setProperty("skiko.renderApi", graphicsData.renderApi)

@@ -41,7 +41,7 @@ fun Mascot(mascotState: MascotState, configData: ConfigData, modifier: Modifier 
             mascotState.loop()
         }
     }
-    Box(modifier = modifier.border(1.dp, Color.Red)) {
+    Box(modifier = modifier) {
         //SUCちゃん
         Image(
             loadOrNull(mascotState.gifName) {
