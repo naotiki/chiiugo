@@ -130,9 +130,9 @@ tasks.register("superReleaseBuild") {
         "packageReleaseDistributionForCurrentOS",
         "createReleaseDistributable"//Ignore "Release" to avoid ktx-datetime and proguard bug
     )
+    val app = file("build/compose/binaries/main-release/app")
+    val zip = file(app.toPath().resolve("Chiiugo-$os-$appVersion.zip"))
     doLast {
-        val app = file("build/compose/binaries/main-release/app")
-        val zip = file(app.toPath().resolve("Chiiugo-$os-$appVersion.zip"))
         zipTo(zip, app.listFiles()!!.single())
     }
 }
