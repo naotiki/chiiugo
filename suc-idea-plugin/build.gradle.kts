@@ -23,7 +23,9 @@ repositories {
 dependencies{
     intellijPlatform {
         intellijIdeaCommunity("2024.1")
-        pluginVerifier()
+        // FIXME MP-6784 Plugin-Verifier-SuspendLambda-references-reported-as-Kotlin-internal-API-usage
+        // https://youtrack.jetbrains.com/issue/MP-6784/Plugin-Verifier-SuspendLambda-references-reported-as-Kotlin-internal-API-usage
+        pluginVerifier("1.371")
         zipSigner()
         instrumentationTools()
     }
