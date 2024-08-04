@@ -25,12 +25,23 @@ import org.jnativehook.NativeHookException
 import org.jnativehook.keyboard.NativeKeyEvent
 import org.jnativehook.keyboard.NativeKeyListener
 import java.awt.GraphicsEnvironment
+import java.net.BindException
 import java.util.logging.LogManager
+import javax.swing.JOptionPane
 import kotlin.random.Random
 import kotlin.system.exitProcess
-
-
-val server by lazy { SocketServer() }
+val server by lazy {
+    try {
+        SocketServer()
+    }catch (e:BindException){
+        e.printStackTrace()
+        JOptionPane.showMessageDialog(null, """
+            起動に失敗しました。
+            同時に2つ以上起動していないか確認してください。
+            """.trimIndent(),e.message,JOptionPane.ERROR_MESSAGE)
+        exitProcess(1)
+    }
+}
 private val screenPx =
     GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration.bounds.run {
         width to height

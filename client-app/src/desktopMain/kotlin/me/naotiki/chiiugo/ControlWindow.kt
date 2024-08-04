@@ -271,7 +271,7 @@ fun ControlWindow(visible: Boolean = true, onCloseRequest: () -> Unit, selectedT
 
                                 2 -> {
                                     Text("接続中のクライアント")
-                                    me.naotiki.chiiugo.server.serverThreads.forEach {
+                                    server.serverThreads.forEach {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Text(it.clientData.toString())
                                             Text(" Port:${it.socket.port}")
@@ -305,7 +305,7 @@ class StatisticsState() {
     private val statisticsDAO = StatisticsDAO()
 
     init {
-        me.naotiki.chiiugo.server.onEventReceive { event, id ->
+        server.onEventReceive { event, id ->
             when (event) {
                 Event.CloseProject -> {
                     val delta = System.currentTimeMillis() - (originEpoch ?: return@onEventReceive)
