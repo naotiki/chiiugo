@@ -34,7 +34,7 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: wasmJsBrowserProductionWebpack
+          arguments: wasmJsBrowserDistribution
           build-root-directory: client-app/
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
